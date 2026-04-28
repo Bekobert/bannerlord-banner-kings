@@ -128,7 +128,7 @@ namespace BannerKings.Managers.Titles.Governments
                 return new TextObject("{=OQ8y4Ros}Succession law will be changed to {NAME}.")
                     .SetTextVariable("NAME", s.Name);
             }
-            return TextObject.Empty;
+            return new TextObject("");
         }
 
         public override TextObject GetSupportDescription() =>

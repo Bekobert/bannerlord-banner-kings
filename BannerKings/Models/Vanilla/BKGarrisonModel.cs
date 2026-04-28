@@ -45,7 +45,7 @@ namespace BannerKings.Models.Vanilla
                 var kingdom = settlement.OwnerClan.Kingdom;
                 if (kingdom != null)
                 {
-                    float enemies = FactionManager.GetEnemyKingdoms(kingdom).Count();
+                    float enemies = FactionHelper.GetEnemyKingdoms(kingdom).Count();
                     var strength = 0f;
                     if (settlement.Town is {GarrisonParty: { }})
                     {
@@ -84,7 +84,7 @@ namespace BannerKings.Models.Vanilla
                 float num = 0f;
                 if (garrisonParty != null)
                 {
-                    num = garrisonParty.Party.TotalStrength;
+                    num = garrisonParty.Party.EstimatedStrength;
                 }
 
                 float num2 = 100f;
@@ -114,7 +114,7 @@ namespace BannerKings.Models.Vanilla
                     if (mobileParty.Army != null)
                     {
                         num8 = MathF.Min(num8, 0.7f);
-                        num9 = 0.3f + mobileParty.Army.TotalStrength / mobileParty.Party.TotalStrength * 0.025f;
+                        num9 = 0.3f + mobileParty.Army.EstimatedStrength / mobileParty.Party.EstimatedStrength * 0.025f;
                     }
 
                     float num10 = (settlement.Town.IsOwnerUnassigned ? 0.75f : 0.5f);

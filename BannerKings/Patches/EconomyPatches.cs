@@ -57,7 +57,7 @@ namespace BannerKings.Patches
                 if (__result != null)
                 {
                     Kingdom kingdom = clan.Kingdom;
-                    if (clan != Clan.PlayerClan && kingdom != null && FactionManager.GetEnemyKingdoms(kingdom).Count() == 0)
+                    if (clan != Clan.PlayerClan && kingdom != null && FactionHelper.GetEnemyKingdoms(kingdom).Count() == 0)
                     {
                         if (!__result.IsClanLeader() && BannerKingsConfig.Instance.TitleManager.GetAllDeJure(__result).Count == 0)
                         {
@@ -77,7 +77,7 @@ namespace BannerKings.Patches
             {
                 if (clan.MapFaction is { IsKingdomFaction: true })
                 {
-                    var enemies = FactionManager.GetEnemyKingdoms(clan.Kingdom);
+                    var enemies = FactionHelper.GetEnemyKingdoms(clan.Kingdom);
                     foreach (var settlement in clan.Settlements)
                     {
                         if (settlement.IsFortification && settlement.Town.GarrisonParty != null)

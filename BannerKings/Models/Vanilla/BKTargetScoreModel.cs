@@ -3,6 +3,7 @@ using BannerKings.Behaviours.Diplomacy.Wars;
 using BannerKings.CampaignContent.Traits;
 using BannerKings.Extensions;
 using BannerKings.Settings;
+using Helpers;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.GameComponents;
@@ -19,7 +20,8 @@ namespace BannerKings.Models.Vanilla
             float result = base.CalculatePatrollingScoreForSettlement(settlement, mobileParty);
             if (result > 0f && BannerKingsSettings.Instance.PatrolIncentive > 0f && settlement.MapFaction == mobileParty.MapFaction)
             {
-                bool war = settlement.MapFaction.Stances.Any(x => x.IsAtWar);
+                var stances = FactionHelper.GetStances(settlement.MapFaction);
+                bool war = stances.Any(x => x.IsAtWar);
                 if (settlement.OwnerClan != null && mobileParty.ActualClan != null && settlement.OwnerClan == mobileParty.ActualClan)
                 {
                     result *= 1f + (settlement.MapFaction.IsKingdomAtWar() ? BannerKingsSettings.Instance.PatrolIncentive / 2f : BannerKingsSettings.Instance.PatrolIncentive);

@@ -288,11 +288,11 @@ namespace BannerKings.UI
             }
         }
 
-        [HarmonyPatch(typeof(SkillVM), MethodType.Constructor, typeof(SkillObject), typeof(CharacterVM),
+        [HarmonyPatch(typeof(SkillVM), MethodType.Constructor, typeof(SkillObject), typeof(CharacterDeveloperHeroItemVM),
             typeof(Action<PerkVM>))]
         internal class SkillVMConstructorPatch
         {
-            private static void Postfix(SkillVM __instance, SkillObject skill, CharacterVM developerVM,
+            private static void Postfix(SkillVM __instance, SkillObject skill, CharacterDeveloperHeroItemVM developerVM,
                 Action<PerkVM> onStartPerkSelection)
             {
                 var explainedNumber = BannerKingsConfig.Instance.LearningModel.CalculateLearningLimit(developerVM.Hero,
@@ -307,10 +307,10 @@ namespace BannerKings.UI
             }
         }
 
-        [HarmonyPatch(typeof(CharacterVM), "RefreshValues")]
+        [HarmonyPatch(typeof(CharacterDeveloperHeroItemVM), "RefreshValues")]
         internal class CharacterVMRefreshPatch
         {
-            private static bool Prefix(CharacterVM __instance)
+            private static bool Prefix(CharacterDeveloperHeroItemVM __instance)
             {
                 var focus = __instance.GetType()
                     .GetProperty("OrgUnspentFocusPoints", BindingFlags.Instance | BindingFlags.Public);
@@ -570,10 +570,10 @@ namespace BannerKings.UI
             }
         }
 
-        [HarmonyPatch(typeof(CharacterVM), "InitializeCharacter")]
+        [HarmonyPatch(typeof(CharacterDeveloperHeroItemVM), "InitializeCharacter")]
         internal class InitializeCharacterPatch
         {
-            private static bool Prefix(CharacterVM __instance)
+            private static bool Prefix(CharacterDeveloperHeroItemVM __instance)
             {
                 var inspectAttr = __instance.GetType()
                     .GetMethod("OnInspectAttribute", BindingFlags.Instance | BindingFlags.NonPublic);

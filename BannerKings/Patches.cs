@@ -274,7 +274,7 @@ namespace BannerKings.Patches
                     }
                 }
 
-                 disabledReason = TextObject.Empty;
+                 disabledReason = new TextObject("");
                 __result = true;
                 return false;
             }
@@ -291,7 +291,7 @@ namespace BannerKings.Patches
                 FeudalTitle title = BannerKingsConfig.Instance.TitleManager.GetSovereignTitle(__instance.Kingdom);
                 TextObject leaderName = __instance.ArmyOwner != null ? 
                     __instance.ArmyOwner.Name : ((__instance.LeaderParty.PartyComponent.PartyOwner != null) ?
-                    __instance.LeaderParty.PartyComponent.PartyOwner.Name : TextObject.Empty);
+                    __instance.LeaderParty.PartyComponent.PartyOwner.Name : new TextObject(""));
                 TextObject result = new TextObject("{=nbmctMLk}{LEADER_NAME}{.o} Army");
                 if (title != null)
                 {
@@ -349,7 +349,7 @@ namespace BannerKings.Patches
             }
         }
 
-        [HarmonyPatch(typeof(Hero), nameof(Hero.CanHaveQuestsOrIssues))]
+        [HarmonyPatch(typeof(Hero), nameof(Hero.CanHaveCampaignIssues))]
         internal class CanHaveQuestsOrIssuesPatch
         {
             private static bool Prefix(Hero __instance, ref bool __result)
@@ -360,7 +360,7 @@ namespace BannerKings.Patches
                 }
 
                 __result = __instance.IsActive && __instance.IsAlive;
-                CampaignEventDispatcher.Instance.CanHaveQuestsOrIssues(__instance, ref __result);
+                CampaignEventDispatcher.Instance.CanHaveCampaignIssues(__instance, ref __result);
 
                 return false;
             }

@@ -259,7 +259,7 @@ namespace BannerKings.Behaviours
                     int cost = MBRandom.RoundRandomized(BannerKingsConfig.Instance.ReligionModel.GetConversionPietyCost(Hero.OneToOneConversationHero, 
                         Hero.MainHero, 
                         BannerKingsConfig.Instance.ReligionsManager.GetHeroReligion(Hero.MainHero)).ResultNumber);
-                    reason = TextObject.Empty;
+                    reason = new TextObject("");
                     if (piety < cost)
                     {
                         reason = new TextObject("{=WbFLsesv}{TEXT} ({PIETY})")
@@ -309,7 +309,7 @@ namespace BannerKings.Behaviours
                     int cost = MBRandom.RoundRandomized(BannerKingsConfig.Instance.ReligionModel.GetConversionPietyCost(Hero.OneToOneConversationHero, 
                         Hero.MainHero,
                         BannerKingsConfig.Instance.ReligionsManager.GetHeroReligion(Hero.MainHero)).ResultNumber);
-                    reason = TextObject.Empty;
+                    reason = new TextObject("");
                     if (piety < cost)
                     {
                         reason = new TextObject("{=dxwTedS0}Not enough piety.");
@@ -478,9 +478,9 @@ namespace BannerKings.Behaviours
         {
             foreach (var warPartyComponent in hero.Clan.WarPartyComponents)
             {
-                if (warPartyComponent.MobileParty.GetHeroPerkRole(hero) != PerkRole.None)
+                if (warPartyComponent.MobileParty.GetHeroPartyRole(hero) != PartyRole.None)
                 {
-                    warPartyComponent.MobileParty.RemoveHeroPerkRole(hero);
+                    warPartyComponent.MobileParty.RemoveHeroPartyRole(hero);
                 }
             }
         }
@@ -618,7 +618,7 @@ namespace BannerKings.Behaviours
     
                     uint color1 = 0;
                     uint color2 = 0;
-                    foreach (Kingdom kingdom in FactionManager.GetEnemyKingdoms(rebel))
+                    foreach (Kingdom kingdom in FactionHelper.GetEnemyKingdoms(rebel))
                     {
                         Campaign.Current.GetCampaignBehavior<BKDiplomacyBehavior>().TriggerRebelWar(clan.Kingdom,
                             kingdom,
@@ -712,7 +712,7 @@ namespace BannerKings.Behaviours
                     party.MemberRoster.TotalManCount < (party.LimitedPartySize * 0.7f) ||
                     party.TotalFoodAtInventory < (party.MemberRoster.TotalManCount * 0.5f)) continue;
 
-                if (FactionManager.GetEnemyKingdoms(clan.Kingdom).Count() > 0)
+                if (FactionHelper.GetEnemyKingdoms(clan.Kingdom).Count() > 0)
                 {
                     if (BannerKingsConfig.Instance.ArmyManagementModel.CanCreateArmy(lord)) continue;
 
@@ -738,7 +738,7 @@ namespace BannerKings.Behaviours
 
             if (clan.IsUnderMercenaryService) return;
 
-            if (FactionManager.GetEnemyKingdoms(kingdom).Count() == 0)
+            if (FactionHelper.GetEnemyKingdoms(kingdom).Count() == 0)
             {
                 List<MobileParty> toDismiss = new List<MobileParty>();
                 foreach (var party in clan.WarPartyComponents)
@@ -1107,27 +1107,27 @@ namespace BannerKings.Behaviours
                 }
 
             Skills:
-                var role = companion.PartyBelongedTo != null ? companion.PartyBelongedTo.GetHeroPerkRole(companion) : PerkRole.None;
-                if (role != PerkRole.None)
+                var role = companion.PartyBelongedTo != null ? companion.PartyBelongedTo.GetHeroPartyRole(companion) : PartyRole.None;
+                if (role != PartyRole.None)
                 {
                     continue;
                 }
 
                 if (companion.GetSkillValue(DefaultSkills.Medicine) >= 60)
                 {
-                    role = PerkRole.Surgeon;
+                    role = PartyRole.Surgeon;
                 }
                 else if (companion.GetSkillValue(DefaultSkills.Engineering) >= 60)
                 {
-                    role = PerkRole.Engineer;
+                    role = PartyRole.Engineer;
                 }
                 else if (companion.GetSkillValue(DefaultSkills.Steward) >= 60)
                 {
-                    role = PerkRole.Quartermaster;
+                    role = PartyRole.Quartermaster;
                 }
                 else if (companion.GetSkillValue(DefaultSkills.Scouting) >= 60)
                 {
-                    role = PerkRole.Scout;
+                    role = PartyRole.Scout;
                 }
 
                 if (clan.WarPartyComponents.Count <= 0)
@@ -1142,48 +1142,48 @@ namespace BannerKings.Behaviours
                 }
                 else
                 {
-                    AssignToRole(clan.WarPartyComponents.GetRandomElement().MobileParty, PerkRole.None, companion);
+                    AssignToRole(clan.WarPartyComponents.GetRandomElement().MobileParty, PartyRole.None, companion);
                 }
             }
         }
 
-        private bool IsRoleFree(MobileParty party, PerkRole role)
+        private bool IsRoleFree(MobileParty party, PartyRole role)
         {
-            if (role == PerkRole.None)
+            if (role == PartyRole.None)
             {
                 return true;
             }
 
             switch (role)
             {
-                case PerkRole.Scout:
+                case PartyRole.Scout:
                     return party.EffectiveScout == party.LeaderHero || party.EffectiveScout == null;
-                case PerkRole.Engineer:
+                case PartyRole.Engineer:
                     return party.EffectiveEngineer == party.LeaderHero || party.EffectiveEngineer == null;
-                case PerkRole.Quartermaster:
+                case PartyRole.Quartermaster:
                     return party.EffectiveQuartermaster == party.LeaderHero || party.EffectiveQuartermaster == null;
-                case PerkRole.Surgeon:
+                case PartyRole.Surgeon:
                     return party.EffectiveSurgeon == party.LeaderHero || party.EffectiveSurgeon == null;
             }
 
             return true;
         }
 
-        private void AssignToRole(MobileParty party, PerkRole role, Hero hero)
+        private void AssignToRole(MobileParty party, PartyRole role, Hero hero)
         {
             AddHeroToPartyAction.Apply(hero, party, false);
             switch (role)
             {
-                case PerkRole.Scout when party.EffectiveScout != party.LeaderHero:
+                case PartyRole.Scout when party.EffectiveScout != party.LeaderHero:
                     party.SetPartyScout(hero);
                     break;
-                case PerkRole.Engineer when party.EffectiveEngineer != party.LeaderHero:
+                case PartyRole.Engineer when party.EffectiveEngineer != party.LeaderHero:
                     party.SetPartyEngineer(hero);
                     break;
-                case PerkRole.Quartermaster when party.EffectiveQuartermaster != party.LeaderHero:
+                case PartyRole.Quartermaster when party.EffectiveQuartermaster != party.LeaderHero:
                     party.SetPartyQuartermaster(hero);
                     break;
-                case PerkRole.Surgeon when party.EffectiveSurgeon != party.LeaderHero:
+                case PartyRole.Surgeon when party.EffectiveSurgeon != party.LeaderHero:
                     party.SetPartySurgeon(hero);
                     break;
             }
@@ -1201,27 +1201,27 @@ namespace BannerKings.Behaviours
                 return;
             }
 
-            var candidates = new List<(PerkRole, float)>
+            var candidates = new List<(PartyRole, float)>
             {
-                new ValueTuple<PerkRole, float>(PerkRole.Scout, 1f),
-                new ValueTuple<PerkRole, float>(PerkRole.Surgeon, 1f),
-                new ValueTuple<PerkRole, float>(PerkRole.Engineer, 1f),
-                new ValueTuple<PerkRole, float>(PerkRole.Quartermaster, 1f)
+                new ValueTuple<PartyRole, float>(PartyRole.Scout, 1f),
+                new ValueTuple<PartyRole, float>(PartyRole.Surgeon, 1f),
+                new ValueTuple<PartyRole, float>(PartyRole.Engineer, 1f),
+                new ValueTuple<PartyRole, float>(PartyRole.Quartermaster, 1f)
             };
 
             var result = MBRandom.ChooseWeighted(candidates);
-            var traits = new Dictionary<PerkRole, List<SkillObject>>
+            var traits = new Dictionary<PartyRole, List<SkillObject>>
             {
                 {
-                    PerkRole.Scout,
+                    PartyRole.Scout,
                     new List<SkillObject>
                     {
                         DefaultSkills.Scouting
                     }
                 },
-                {PerkRole.Surgeon, new List<SkillObject> { DefaultSkills.Medicine}},
-                {PerkRole.Engineer, new List<SkillObject> { DefaultSkills.Engineering}},
-                {PerkRole.Quartermaster, new List<SkillObject> { DefaultSkills.Steward}}
+                {PartyRole.Surgeon, new List<SkillObject> { DefaultSkills.Medicine}},
+                {PartyRole.Engineer, new List<SkillObject> { DefaultSkills.Engineering}},
+                {PartyRole.Quartermaster, new List<SkillObject> { DefaultSkills.Steward}}
             };
 
             var template = GetAdequateTemplate(traits[result], clan.Culture);
