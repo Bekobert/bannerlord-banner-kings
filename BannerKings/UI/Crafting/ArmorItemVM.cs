@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -18,7 +20,7 @@ namespace BannerKings.UI.Crafting
         {
             this.armorCrafting = armorCrafting;
             Item = item;
-            Visual = new ImageIdentifierVM(item);
+            Visual = new ItemImageIdentifierVM(item);
             Hint = new BasicTooltipViewModel(() => GetHint());
             stamina = BannerKingsConfig.Instance.SmithingModel.CalculateArmorStamina(item, armorCrafting.Hero);
             Difficulty = BannerKingsConfig.Instance.SmithingModel.CalculateArmorDifficulty(item);

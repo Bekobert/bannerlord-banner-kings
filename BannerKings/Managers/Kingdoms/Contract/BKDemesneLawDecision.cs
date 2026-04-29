@@ -9,6 +9,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.SaveSystem;
+using TaleWorlds.Core.ImageIdentifiers;
 
 namespace BannerKings.Managers.Kingdoms.Contract
 {

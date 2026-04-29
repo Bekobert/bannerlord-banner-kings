@@ -10,6 +10,7 @@ using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.SaveSystem;
 
 namespace BannerKings.Managers.Kingdoms.Council

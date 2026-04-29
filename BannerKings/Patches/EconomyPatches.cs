@@ -108,7 +108,7 @@ namespace BannerKings.Patches
                         while (enumerator.MoveNext())
                         {
                             WarPartyComponent warPartyComponent = enumerator.Current;
-                            warPartyComponent.MobileParty.SetWagePaymentLimit(TaleWorlds.CampaignSystem.Campaign.Current.Models.PartyWageModel.MaxWage);
+                            warPartyComponent.MobileParty.SetWagePaymentLimit(TaleWorlds.CampaignSystem.Campaign.Current.Models.PartyWageModel.MaxWagePaymentLimit);
                         }
                         return false;
                     }
@@ -358,7 +358,7 @@ namespace BannerKings.Patches
                 }
 
                 List<MobileParty> list = new List<MobileParty>();
-                foreach (var hero in clan.Lords)
+                foreach (var hero in clan.AliveLords)
                     foreach (var caravanPartyComponent in hero.OwnedCaravans)
                         list.Add(caravanPartyComponent.MobileParty);
                         
@@ -543,11 +543,11 @@ namespace BannerKings.Patches
                     .ResultNumber;
         }
 
-        [HarmonyPatch(typeof(InventoryManager))]
+        [HarmonyPatch(typeof(InventoryScreenHelper))]
         internal class InventoryManagerPatches
         {
             [HarmonyPostfix]
-            [HarmonyPatch("GetCurrentMarketData")]
+            [HarmonyPatch("GetCurrentMarketDataForPlayer")]
             private static void GetPricePostfix(ref IMarketData __result)
             {
                 if (TaleWorlds.CampaignSystem.Campaign.Current.GameMode == CampaignGameMode.Campaign)
@@ -1064,13 +1064,13 @@ namespace BannerKings.Patches
             private static bool SendVillagerPartyToTradeBoundTown(MobileParty villagerParty)
             {
                 Settlement bound = villagerParty.HomeSettlement.Village.Bound;
-                if (!bound.IsUnderSiege) villagerParty.Ai.SetMoveGoToSettlement(bound);
+                if (!bound.IsUnderSiege) villagerParty.SetMoveGoToSettlement(bound, MobileParty.NavigationType.Default, false);
                 else
                 {
                     Settlement tradeBound = villagerParty.HomeSettlement.Village.TradeBound;
                     if (tradeBound != null)
                     {
-                        if (!tradeBound.IsUnderSiege) villagerParty.Ai.SetMoveGoToSettlement(tradeBound);
+                        if (!tradeBound.IsUnderSiege) villagerParty.SetMoveGoToSettlement(tradeBound, MobileParty.NavigationType.Default, false);
                     }
                 }
 
@@ -1153,8 +1153,9 @@ namespace BannerKings.Patches
                         var result = TaleWorlds.CampaignSystem.Campaign.Current.Models.VillageProductionCalculatorModel.CalculateDailyProductionAmount(
                                 village, item);
 
-                        var num = MathF.Floor(result);
-                        var diff = result - num;
+                        var resultValue = result.ResultNumber;
+                        var num = MathF.Floor(resultValue);
+                        var diff = resultValue - num;
                         num += GetDifferential(village, item, diff);
 
                         if (num > 0)
@@ -1205,7 +1206,7 @@ namespace BannerKings.Patches
                         }
                         else
                         {
-                            float distance = TaleWorlds.CampaignSystem.Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, village.Settlement);
+                            float distance = TaleWorlds.CampaignSystem.Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, village.Settlement, settlement.HasPort, village.Settlement.HasPort, MobileParty.NavigationType.All);
                             float num4 = 0.5f * (600f / MathF.Pow(distance, 1.5f));
                             if (num4 > 0.5f)
                             {
@@ -1217,7 +1218,7 @@ namespace BannerKings.Patches
                                 bound.SetValue(village, village.Bound);
                             }
 
-                            float distance2 = TaleWorlds.CampaignSystem.Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, village.TradeBound);
+                            float distance2 = TaleWorlds.CampaignSystem.Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, village.TradeBound, settlement.HasPort, village.TradeBound.HasPort, MobileParty.NavigationType.All);
                             float num5 = 0.5f * (600f / MathF.Pow(distance2, 1.5f));
                             if (num5 > 0.5f)
                             {
@@ -1236,13 +1237,13 @@ namespace BannerKings.Patches
                         }
                         else
                         {
-                            float distance3 = TaleWorlds.CampaignSystem.Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, village2.Settlement);
+                            float distance3 = TaleWorlds.CampaignSystem.Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, village2.Settlement, settlement.HasPort, village2.Settlement.HasPort, MobileParty.NavigationType.All);
                             float num7 = 0.5f * (600f / MathF.Pow(distance3, 1.5f));
                             if (num7 > 0.5f)
                             {
                                 num7 = 0.5f;
                             }
-                            float distance4 = TaleWorlds.CampaignSystem.Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, village2.TradeBound);
+                            float distance4 = TaleWorlds.CampaignSystem.Campaign.Current.Models.MapDistanceModel.GetDistance(settlement, village2.TradeBound, settlement.HasPort, village2.TradeBound.HasPort, MobileParty.NavigationType.All);
                             float num8 = 0.5f * (600f / MathF.Pow(distance4, 1.5f));
                             if (num8 > 0.5f)
                             {

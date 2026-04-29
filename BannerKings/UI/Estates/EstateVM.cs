@@ -8,6 +8,8 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.ViewModelCollection;
 using TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu.TownManagement;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
+using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Core.ViewModelCollection.Selector;
 using TaleWorlds.Library;
@@ -61,7 +63,7 @@ namespace BannerKings.UI.Estates
             NameText = IsDisabled ? new TextObject("{=P8w8FYfp}Vacant Estate").ToString() : Estate.Name.ToString();
             if (!IsDisabled)
             {
-                ImageIdentifier = new ImageIdentifierVM(new ImageIdentifier(CampaignUIHelper.GetCharacterCode(Estate.Owner.CharacterObject)));
+                ImageIdentifier = new CharacterImageIdentifierVM(CampaignUIHelper.GetCharacterCode(Estate.Owner.CharacterObject));
             }
 
             MainInfo.Add(new TownManagementDescriptionItemVM(new TextObject("{=VRbXbsPE}Population:"), 
@@ -201,7 +203,7 @@ namespace BannerKings.UI.Estates
                     var action = BannerKingsConfig.Instance.EstatesModel.GetGrant(Estate, Hero.MainHero, hero);
                     list.Add(new InquiryElement(action,
                         hero.Name.ToString(),
-                        new ImageIdentifier(CampaignUIHelper.GetCharacterCode(hero.CharacterObject, true)),
+                        new CharacterImageIdentifier(CampaignUIHelper.GetCharacterCode(hero.CharacterObject, true)),
                         action.Possible,
                         new TextObject("{=D2wXBQAU}{POSSIBLE}{newline}Grant this property to {HERO}. They serve the {CLAN} clan ({OWNER}) and have {OPINION} opinion towards you.")
                         .SetTextVariable("POSSIBLE", action.Reason)
