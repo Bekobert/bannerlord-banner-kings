@@ -27,6 +27,7 @@ using static TaleWorlds.CampaignSystem.Election.SettlementClaimantDecision;
 using BannerKings.Behaviours.Relations;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using BannerKings.CampaignContent.Traits;
+using TaleWorlds.Core.ImageIdentifiers;
 
 namespace BannerKings.UI
 {
@@ -102,12 +103,22 @@ namespace BannerKings.UI
                 material.MarketAmount.ToString(),
                 0));
 
-            Settlement source = SettlementHelper.FindNearestVillage(village =>
+            /*Settlement source = SettlementHelper.FindNearestVillage(village =>
             {
                 var data = BannerKingsConfig.Instance.PopulationManager.GetPopData(village);
                 return BannerKingsConfig.Instance.PopulationManager.GetProductions(data)
                 .Any(production => production.Item1 == material.Material);
-            });
+            });*/
+            Village nearestVillage = SettlementHelper.FindNearestVillageToSettlement(
+                Settlement.CurrentSettlement,
+                MobileParty.NavigationType.Default,
+                village =>
+                {
+                    var data = BannerKingsConfig.Instance.PopulationManager.GetPopData(village);
+                    return BannerKingsConfig.Instance.PopulationManager.GetProductions(data)
+                        .Any(production => production.Item1 == material.Material);
+                });
+            Settlement source = nearestVillage?.Settlement;
 
             if (source != null)
             {
@@ -372,7 +383,7 @@ namespace BannerKings.UI
             var stlmtSlaves = new TroopRoster(null);
             stlmtSlaves.AddToCounts(CharacterObject.All.FirstOrDefault(x => x.StringId == "looter"), count);
 
-            PartyScreenManager.OpenScreenAsLoot(TroopRoster.CreateDummyTroopRoster(), stlmtSlaves,
+            PartyScreenHelper.OpenScreenAsLoot(TroopRoster.CreateDummyTroopRoster(), stlmtSlaves,
                 Settlement.CurrentSettlement.Name, 0,
                 delegate(PartyBase _, TroopRoster _, TroopRoster leftPrisonRoster,
                     PartyBase _, TroopRoster _, TroopRoster rightPrisonRoster,
@@ -406,7 +417,7 @@ namespace BannerKings.UI
             var stlmtSlaves = new TroopRoster(null);
             stlmtSlaves.AddToCounts(CharacterObject.All.FirstOrDefault(x => x.StringId == "looter"), count);
 
-            PartyScreenManager.OpenScreenAsLoot(TroopRoster.CreateDummyTroopRoster(), stlmtSlaves,
+            PartyScreenHelper.OpenScreenAsLoot(TroopRoster.CreateDummyTroopRoster(), stlmtSlaves,
                 Settlement.CurrentSettlement.Name, 0,
                 delegate (PartyBase _, TroopRoster _, TroopRoster leftPrisonRoster,
                     PartyBase _, TroopRoster _, TroopRoster rightPrisonRoster,
@@ -440,7 +451,7 @@ namespace BannerKings.UI
             var stlmtSlaves = new TroopRoster(null);
 
             var slavesResult = 0f;
-            PartyScreenManager.OpenScreenAsLoot(TroopRoster.CreateDummyTroopRoster(), stlmtSlaves,
+            PartyScreenHelper.OpenScreenAsLoot(TroopRoster.CreateDummyTroopRoster(), stlmtSlaves,
                 Settlement.CurrentSettlement.Name, 0,
                 delegate (PartyBase _, TroopRoster _, TroopRoster leftPrisonRoster,
                     PartyBase _, TroopRoster _, TroopRoster rightPrisonRoster,
@@ -499,7 +510,7 @@ namespace BannerKings.UI
                         foreach (var hero in BannerKingsConfig.Instance.TitleModel.GetGrantCandidates(titleAction.ActionTaker))
                         {
                             options.Add(new InquiryElement(hero, hero.Name.ToString(),
-                                new ImageIdentifier(CampaignUIHelper.GetCharacterCode(hero.CharacterObject))));
+                                new CharacterImageIdentifier(CampaignUIHelper.GetCharacterCode(hero.CharacterObject))));
                         }
 
                         MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData(
@@ -978,7 +989,7 @@ namespace BannerKings.UI
 
         private static string GetCorrelation(Hero hero)
         {
-            TextObject correlation = TextObject.Empty;
+            TextObject correlation = new TextObject("");
             var playerClan = Clan.PlayerClan;
             var main = Hero.MainHero;
             if (hero.IsNotable)

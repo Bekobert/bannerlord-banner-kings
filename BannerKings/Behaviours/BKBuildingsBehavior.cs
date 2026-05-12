@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.Core;
@@ -280,8 +281,12 @@ namespace BannerKings.Behaviours
 
             if (town.Governor != null && town.CurrentBuilding != null)
             {
+                /*Town materialSource = town.IsTown ? town : SettlementHelper
+                    .FindNearestTown(x => !x.MapFaction.IsAtWarWith(town.MapFaction)).Town;*/
                 Town materialSource = town.IsTown ? town : SettlementHelper
-                    .FindNearestTown(x => !x.MapFaction.IsAtWarWith(town.MapFaction)).Town;
+                    .FindNearestTownToSettlement(town.Settlement,
+                                                 MobileParty.NavigationType.Default,
+                                                 x => !x.MapFaction.IsAtWarWith(town.MapFaction));
 
                 if (materialSource == null)
                 {
@@ -454,7 +459,7 @@ namespace BannerKings.Behaviours
                 if (settlement.Town != null)
                 {
                     var buildings = settlement.Town.Buildings;
-                    foreach (var type in BKBuildings.Instance.All)
+                    /*foreach (var type in BKBuildings.Instance.All)
                     {
                         if (settlement.IsTown && type.BuildingLocation == BuildingLocation.Settlement &&
                             buildings.FirstOrDefault(x => x.BuildingType == type) == null)
@@ -463,6 +468,21 @@ namespace BannerKings.Behaviours
                         }
                         else if (settlement.IsCastle && type.BuildingLocation == BuildingLocation.Castle &&
                             buildings.FirstOrDefault(x => x.BuildingType == type) == null)
+                        {
+                            buildings.Add(new Building(type, settlement.Town));
+                        }
+                    }*/
+                    foreach (var type in BKBuildings.Instance.All)
+                    {
+                        if (settlement.IsTown &&
+                            type.StringId.StartsWith("building_settlement_") &&
+                            buildings.FirstOrDefault(x => x.BuildingType == type) == null)
+                        {
+                            buildings.Add(new Building(type, settlement.Town));
+                        }
+                        else if (settlement.IsCastle &&
+                                 type.StringId.StartsWith("building_castle_") &&
+                                 buildings.FirstOrDefault(x => x.BuildingType == type) == null)
                         {
                             buildings.Add(new Building(type, settlement.Town));
                         }

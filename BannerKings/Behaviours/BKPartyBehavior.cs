@@ -223,18 +223,28 @@ namespace BannerKings.Behaviours
 
             if (lordParty.Army != null || lordParty.MapEvent != null) return;
 
-            if (lordParty.Ai.DefaultBehavior != AiBehavior.PatrolAroundPoint) return;
+            if (lordParty.DefaultBehavior != AiBehavior.PatrolAroundPoint) return;
 
             if (TaleWorlds.CampaignSystem.Campaign.Current.Models.MobilePartyFoodConsumptionModel.DoesPartyConsumeFood(lordParty) &&
                 lordParty.TotalFoodAtInventory < (int)(MathF.Abs(lordParty.FoodChange * 5f)))
             {
-                Settlement settlement = SettlementHelper.FindNearestSettlement((Settlement settlement) =>
+                /*Settlement settlement = SettlementHelper.FindNearestSettlement((Settlement settlement) =>
                 {
                     return (settlement.Town != null || settlement.IsVillage) && settlement.MapFaction != null &&
                     !settlement.MapFaction.IsAtWarWith(lordParty.MapFaction) && settlement.ItemRoster.TotalFood > 0;
                 },
-                lordParty);
-                if (settlement != null) lordParty.Ai.SetMoveGoToSettlement(settlement);
+                lordParty);*/
+                Settlement settlement = SettlementHelper.FindNearestSettlementToMobileParty(
+                    lordParty,
+                    MobileParty.NavigationType.Default,
+                    (Settlement s) =>
+                    {
+                        return (s.Town != null || s.IsVillage) &&
+                               s.MapFaction != null &&
+                               !s.MapFaction.IsAtWarWith(lordParty.MapFaction) &&
+                               s.ItemRoster.TotalFood > 0;
+                    });
+                if (settlement != null) lordParty.SetMoveGoToSettlement(settlement, MobileParty.NavigationType.Default, settlement.HasPort);
             }
         }
 
@@ -301,7 +311,7 @@ namespace BannerKings.Behaviours
            
             if (villagerParty.CurrentSettlement != null && villagerParty.CurrentSettlement.IsCastle)
             {
-                villagerParty.Ai.SetMoveGoToSettlement(villagerParty.HomeSettlement);
+                villagerParty.SetMoveGoToSettlement(villagerParty.HomeSettlement, MobileParty.NavigationType.Default, villagerParty.HomeSettlement.HasPort);
             }
         }
 
@@ -620,7 +630,7 @@ namespace BannerKings.Behaviours
 
                     if (!origin.MapFaction.IsAtWarWith(fortification.MapFaction))
                     {
-                        if (TaleWorlds.CampaignSystem.Campaign.Current.Models.MapDistanceModel.GetDistance(fortification.Settlement, origin) < 100f)
+                        if (TaleWorlds.CampaignSystem.Campaign.Current.Models.MapDistanceModel.GetDistance(fortification.Settlement, origin, fortification.Settlement.HasPort, origin.HasPort, MobileParty.NavigationType.Default, out _) < 100f)
                             list.Add(fortification.Settlement);
                     }
                 }
@@ -728,7 +738,8 @@ namespace BannerKings.Behaviours
             starter.AddPlayerLine("traveller_party_loot", "traveller_party_greeting", "close_window",
                 new TextObject("{=dOcj05n6}Whatever you have, I'm taking it. Surrender or die!").ToString(),
                 traveller_aggression_on_condition,
-                delegate { PlayerEncounter.Current.IsEnemy = true; });
+                //delegate { PlayerEncounter.Current.IsEnemy = true; });
+                delegate { PlayerEncounter.StartBattle(); });
 
             starter.AddPlayerLine("traveller_party_leave", "traveller_party_greeting", "close_window",
                 new TextObject("{=zhRJeYOY}Carry on, then. Farewell.").ToString(), null,
@@ -753,7 +764,9 @@ namespace BannerKings.Behaviours
 
             starter.AddDialogLine("slavecaravan_party_threat_response", "slavecaravan_threat", "close_window",
                 "{=18j2nO70}One more for the mines! Lads, get the whip![rf:idle_angry][ib:aggressive]",
-                null, delegate { PlayerEncounter.Current.IsEnemy = true; });
+                null,
+                //delegate { PlayerEncounter.Current.IsEnemy = true; });
+                delegate { PlayerEncounter.StartBattle(); });
 
             starter.AddDialogLine("raised_militia_party_start", "start", "raised_militia_greeting",
                 "{=SRg8cwUN}{?PLAYER.GENDER}M'lady!{?}M'lord!{\\?} We are ready to serve you.",
@@ -812,7 +825,7 @@ namespace BannerKings.Behaviours
                 () => true,
                 () =>
                 {
-                    PartyScreenManager.OpenScreenAsManageTroopsAndPrisoners(PlayerEncounter.EncounteredParty.MobileParty);
+                    PartyScreenHelper.OpenScreenAsManageTroopsAndPrisoners(PlayerEncounter.EncounteredParty.MobileParty);
                 });
 
             starter.AddPlayerLine("retinue_party_leave", "raised_retinue_greeting", "close_window",

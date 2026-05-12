@@ -138,7 +138,7 @@ namespace BannerKings
             campaignStarter.AddModel(new BKCategorySelector());
             campaignStarter.AddModel(new BKSettlementAccessModel());
             campaignStarter.AddModel(BannerKingsConfig.Instance.MarriageModel);
-            campaignStarter.AddModel(new BKItemValueModel());
+            //campaignStarter.AddModel(new BKItemValueModel());
             campaignStarter.AddModel(new BKTargetScoreModel());
 
             BKAttributes.Instance.Initialize();

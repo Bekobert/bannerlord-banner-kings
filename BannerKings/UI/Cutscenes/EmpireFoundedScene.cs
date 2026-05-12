@@ -16,9 +16,9 @@ namespace BannerKings.UI.Cutscenes
             this.title = title;
         }
 
-        public override IEnumerable<SceneNotificationData.SceneNotificationCharacter> GetSceneNotificationCharacters()
+        public override SceneNotificationCharacter[] GetSceneNotificationCharacters()
         {
-            List<SceneNotificationData.SceneNotificationCharacter> list = new List<SceneNotificationData.SceneNotificationCharacter>();
+            List<SceneNotificationCharacter> list = new List<SceneNotificationCharacter>();
             Hero leader = NewKingdom.Leader;
             Equipment overridenEquipment = leader.BattleEquipment.Clone(false);
             CampaignSceneNotificationHelper.RemoveWeaponsFromEquipment(ref overridenEquipment, true, false);
@@ -45,7 +45,7 @@ namespace BannerKings.UI.Cutscenes
                 CampaignSceneNotificationHelper.RemoveWeaponsFromEquipment(ref overridenEquipment2, true, false);
                 list.Add(CampaignSceneNotificationHelper.CreateNotificationCharacterFromHero(hero, overridenEquipment2, false, default(BodyProperties), uint.MaxValue, uint.MaxValue, false));
             }
-            return list;
+            return list.ToArray();
         }
 
         public override TextObject TitleText

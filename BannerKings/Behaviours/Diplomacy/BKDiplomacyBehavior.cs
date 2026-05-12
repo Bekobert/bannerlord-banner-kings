@@ -14,6 +14,8 @@ using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using Helpers;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 
 namespace BannerKings.Behaviours.Diplomacy
 {
@@ -165,7 +167,8 @@ namespace BannerKings.Behaviours.Diplomacy
 
         public void MakeAlliance(Kingdom proposer, Kingdom proposed)
         {
-            FactionManager.DeclareAlliance(proposer, proposed);
+            //FactionManager.DeclareAlliance(proposer, proposed);
+            Campaign.Current.GetCampaignBehavior<AllianceCampaignBehavior>().StartAlliance(proposer, proposed);
             int denars = MBRandom.RoundRandomized(BannerKingsConfig.Instance.DiplomacyModel.GetAllianceDenarCost(proposer,
                     proposed).ResultNumber);
 
@@ -297,7 +300,11 @@ namespace BannerKings.Behaviours.Diplomacy
                     BKDeclareWarDecision declareWarDecision = new BKDeclareWarDecision(cb,
                                         clan,
                                         target);
-                    float support = new KingdomElection(declareWarDecision).GetLikelihoodForOutcome(0);
+                    //float support = new KingdomElection(declareWarDecision).GetLikelihoodForOutcome(0);
+                    var election = new KingdomElection(declareWarDecision);
+                    election.StartElectionWithoutPlayer();
+                    election.DetermineOfficialSupport();
+                    float support = election.PossibleOutcomes.Count > 0 ? election.PossibleOutcomes[0].WinChance : 0f;
                     if (support > 0.3f)
                     {
                         clan.Kingdom.AddDecision(declareWarDecision);
@@ -424,13 +431,13 @@ namespace BannerKings.Behaviours.Diplomacy
                 }
                 else if (kingdom.Clans.Count == 0) DestroyKingdomAction.Apply(kingdom);
 
-                float strength = kingdom.TotalStrength;
+                float strength = kingdom.CurrentTotalStrength;
                 int fiefs = kingdom.Fiefs.Count;
                 
                 float highestStrength = 0f;
-                foreach (Kingdom k in FactionManager.GetEnemyKingdoms(kingdom))
+                foreach (Kingdom k in FactionHelper.GetEnemyKingdoms(kingdom))
                 {
-                    float enemyStrength = k.TotalStrength;
+                    float enemyStrength = k.CurrentTotalStrength;
                     if (enemyStrength > highestStrength) highestStrength = enemyStrength;
                 }
 
@@ -541,37 +548,33 @@ namespace BannerKings.Behaviours.Diplomacy
 
         private void AvaliateAlliances(Kingdom kingdom, Clan clan)
         {
-            foreach (StanceLink stance in kingdom.Stances)
+            foreach (Kingdom other in kingdom.AlliedKingdoms)
             {
-                IFaction other = stance.Faction1 == kingdom ? stance.Faction2 : stance.Faction1;
-                if (other.IsKingdomFaction && stance.IsAllied)
-                {
-                    if (BannerKingsConfig.Instance.MarriageModel.DiscoverAncestors(clan.Leader, 3)
-                        .Intersect(BannerKingsConfig.Instance.MarriageModel.DiscoverAncestors(other.Leader, 3)).Any()) 
-                    { 
-                        if (kingdom == Clan.PlayerClan.MapFaction && other == Clan.PlayerClan.MapFaction)
-                        {
-                            InformationManager.DisplayMessage(new InformationMessage(
-                                new TextObject("{=ycB56vXA}Despite the new rulership of {KINGDOM}, the realm and the {OTHER} are still allies through blood ties.")
-                                .SetTextVariable("KINGDOM", kingdom.Name)
-                                .SetTextVariable("OTHER", other.Name)
-                                .ToString(),
-                                Color.FromUint(Utils.TextHelper.COLOR_LIGHT_BLUE)));
-                        }
-                    }
-                    else
+                if (BannerKingsConfig.Instance.MarriageModel.DiscoverAncestors(clan.Leader, 3)
+                    .Intersect(BannerKingsConfig.Instance.MarriageModel.DiscoverAncestors(other.Leader, 3)).Any()) 
+                { 
+                    if (kingdom == Clan.PlayerClan.MapFaction && other == Clan.PlayerClan.MapFaction)
                     {
-                        if (kingdom == Clan.PlayerClan.MapFaction && other == Clan.PlayerClan.MapFaction)
-                        {
-                            InformationManager.DisplayMessage(new InformationMessage(
-                                new TextObject("{=nVhqicUR}Due to the absence of blood ties, the new rulership of {KINGDOM} has dissolved its previous alliance with the {OTHER}.")
-                                .SetTextVariable("KINGDOM", kingdom.Name)
-                                .SetTextVariable("OTHER", other.Name)
-                                .ToString(),
-                                Color.FromUint(Utils.TextHelper.COLOR_LIGHT_YELLOW)));
-                        }
-                        FactionManager.SetNeutral(kingdom, other);
+                        InformationManager.DisplayMessage(new InformationMessage(
+                            new TextObject("{=ycB56vXA}Despite the new rulership of {KINGDOM}, the realm and the {OTHER} are still allies through blood ties.")
+                            .SetTextVariable("KINGDOM", kingdom.Name)
+                            .SetTextVariable("OTHER", other.Name)
+                            .ToString(),
+                            Color.FromUint(Utils.TextHelper.COLOR_LIGHT_BLUE)));
                     }
+                }
+                else
+                {
+                    if (kingdom == Clan.PlayerClan.MapFaction && other == Clan.PlayerClan.MapFaction)
+                    {
+                        InformationManager.DisplayMessage(new InformationMessage(
+                            new TextObject("{=nVhqicUR}Due to the absence of blood ties, the new rulership of {KINGDOM} has dissolved its previous alliance with the {OTHER}.")
+                            .SetTextVariable("KINGDOM", kingdom.Name)
+                            .SetTextVariable("OTHER", other.Name)
+                            .ToString(),
+                            Color.FromUint(Utils.TextHelper.COLOR_LIGHT_YELLOW)));
+                    }
+                    FactionManager.SetNeutral(kingdom, other);
                 }
             }
         }

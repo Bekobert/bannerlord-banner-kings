@@ -267,13 +267,13 @@ namespace BannerKings.Models.Vanilla
 
             if (hero.IsClanLeader())
             {
-                result.AddFactor(BKSkillEffects.Instance.SpouseScore.GetPrimaryValue(
+                result.AddFactor(BKSkillEffects.Instance.SpouseScore.GetSkillEffectValue(
                     hero.GetSkillValue(BKSkills.Instance.Lordship)) * 0.01f,
                     BKSkills.Instance.Lordship.Name);
             }
             else
             {
-                result.AddFactor(BKSkillEffects.Instance.SpouseScore.GetSecondaryValue(
+                result.AddFactor(BKSkillEffects.Instance.SpouseScore.GetSkillEffectValue(
                     hero.Clan.Leader.GetSkillValue(BKSkills.Instance.Lordship)) * 0.01f,
                     BKSkills.Instance.Lordship.Name);
             }

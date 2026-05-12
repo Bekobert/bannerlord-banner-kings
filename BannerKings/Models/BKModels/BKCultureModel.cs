@@ -9,6 +9,7 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
+using Helpers;
 
 namespace BannerKings.Models.BKModels
 {
@@ -39,7 +40,7 @@ namespace BannerKings.Models.BKModels
                 var peace = true;
                 if (clan.Kingdom != null)
                 {
-                    peace = FactionManager.GetEnemyFactions(clan.Kingdom).Count() == 0;
+                    peace = FactionHelper.GetEnemyKingdoms(clan.Kingdom).Count() == 0;
                 }
 
                 result.Add(peace ? 0.01f : -0.01f, new TextObject(peace ? "{=zgK5zVkQ}Peace" : "{=Ypfy9D3P}War"));

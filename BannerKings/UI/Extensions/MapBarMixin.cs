@@ -18,6 +18,8 @@ namespace BannerKings.UI.Extensions
         private string pietyAbbr;
         private BasicTooltipViewModel pietyHint;
         private bool pietyWarning;
+        private BasicTooltipViewModel moraleHint;
+        private BasicTooltipViewModel troopWageHint;
 
         public MapBarMixin(MapInfoVM vm) : base(vm)
         {
@@ -82,6 +84,34 @@ namespace BannerKings.UI.Extensions
             }
         }
 
+        [DataSourceProperty]
+        public BasicTooltipViewModel MoraleHint
+        {
+            get => moraleHint;
+            set
+            {
+                if (value != moraleHint)
+                {
+                    moraleHint = value;
+                    ViewModel!.OnPropertyChangedWithValue(value);
+                }
+            }
+        }
+
+        [DataSourceProperty]
+        public BasicTooltipViewModel TroopWageHint
+        {
+            get => troopWageHint;
+            set
+            {
+                if (value != troopWageHint)
+                {
+                    troopWageHint = value;
+                    ViewModel!.OnPropertyChangedWithValue(value);
+                }
+            }
+        }
+
         public override void OnRefresh()
         {
             if (BannerKingsConfig.Instance.ReligionsManager == null)
@@ -101,11 +131,11 @@ namespace BannerKings.UI.Extensions
             {
                 var moraleHint = CampaignUIHelper.GetPartyMoraleTooltip(MobileParty.MainParty);
                 UIHelper.AddMoraleSuppliesHint(ref moraleHint, supplies);
-                vm.MoraleHint = new BasicTooltipViewModel(() => moraleHint);
+                MoraleHint = new BasicTooltipViewModel(() => moraleHint);
 
-                var wageHint = CampaignUIHelper.GetPartyWageTooltip();
+                var wageHint = CampaignUIHelper.GetPartyWageTooltip(MobileParty.MainParty);
                 UIHelper.AddWageSuppliesHint(ref wageHint, supplies);
-                vm.TroopWageHint = new BasicTooltipViewModel(() => wageHint);
+                TroopWageHint = new BasicTooltipViewModel(() => wageHint);
 
             }
         }

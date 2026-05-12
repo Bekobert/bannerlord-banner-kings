@@ -589,7 +589,7 @@ namespace BannerKings.Models.Vanilla
                 .SetTextVariable("HERO", allyClan.Name));
 
             KingdomElection warSupport = new KingdomElection(new BKDeclareWarDecision(null, allyClan, attacker));
-            result.Add(warSupport.GetLikelihoodForOutcome(0), new TextObject("{=uXVMjfM9}War support in {ALLY}")
+            result.Add(warSupport.PossibleOutcomes[0].WinChance, new TextObject("{=uXVMjfM9}War support in {ALLY}")
                 .SetTextVariable("ALLY", ally.Name));
 
             /*War war = TaleWorlds.CampaignSystem.Campaign.Current.GetCampaignBehavior<BKDiplomacyBehavior>().GetWar(attacker, defender);
@@ -616,7 +616,7 @@ namespace BannerKings.Models.Vanilla
         public override ExplainedNumber GetPactInfluenceCost(Kingdom proposer, Kingdom proposed, bool explanations = false)
         {
             ExplainedNumber result = new ExplainedNumber(0, explanations);
-            float peace = GetScoreOfDeclaringPeace(proposed, proposer, proposed, out TextObject reason) / 2f;
+            float peace = GetScoreOfDeclaringPeace(proposed, proposer) / 2f;
 
             foreach (var clan in proposer.Clans)
             {
@@ -638,7 +638,7 @@ namespace BannerKings.Models.Vanilla
         {
             if (proposed == proposer) return false;
             
-            float peace = GetScoreOfDeclaringPeace(proposed, proposer, proposed, out TextObject reason);
+            float peace = GetScoreOfDeclaringPeace(proposed, proposer);
             return peace > 0;
         }
 
@@ -648,7 +648,7 @@ namespace BannerKings.Models.Vanilla
         public override ExplainedNumber GetTruceDenarCost(Kingdom proposer, Kingdom proposed, float years = 3f, bool explanations = false)
         {
             ExplainedNumber result = new ExplainedNumber(0, explanations);
-            float peace = GetScoreOfDeclaringPeace(proposed, proposer, proposed, out TextObject reason) / 2f;
+            float peace = GetScoreOfDeclaringPeace(proposed, proposer) / 2f;
             result.Add((100000f - peace) * MathF.Sqrt(years), new TextObject("{=PsRfxMEv}Truce duration"));
 
             float relation = proposed.RulingClan.Leader.GetRelation(proposer.RulingClan.Leader) / 150f;
@@ -690,7 +690,7 @@ namespace BannerKings.Models.Vanilla
             result.Add(-100f, new TextObject("{=Gq5BnNiN}Reluctance"));
 
             KingdomElection election = new KingdomElection(new BKDeclareWarDecision(null, proposed.RulingClan, proposer));
-            result.Add(election.GetLikelihoodForOutcome(1) * 85f, new TextObject("{=04Smb5KQ}Peace support in {ALLY}")
+            result.Add(election.PossibleOutcomes[1].WinChance * 85f, new TextObject("{=04Smb5KQ}Peace support in {ALLY}")
                 .SetTextVariable("ALLY", proposed.Name));
 
             float relation = proposed.RulingClan.Leader.GetRelation(proposer.RulingClan.Leader);
@@ -740,7 +740,7 @@ namespace BannerKings.Models.Vanilla
         public override ExplainedNumber GetAllianceDenarCost(Kingdom proposer, Kingdom proposed, bool explanations = false)
         {
             ExplainedNumber result = new ExplainedNumber(0, explanations);
-            float peace = GetScoreOfDeclaringPeace(proposed, proposer, proposed, out TextObject reason) / 2f;
+            float peace = GetScoreOfDeclaringPeace(proposed, proposer) / 2f;
             result.Add((100000f), new TextObject("{=PsRfxMEv}Truce duration"));
 
             float income = 0f;
@@ -776,21 +776,21 @@ namespace BannerKings.Models.Vanilla
             result.Add(cap, new TextObject("{=1RD1OWYP}Influence limit of {CLAN}")
                 .SetTextVariable("CLAN", proposer.RulingClan.Name));
 
-            float peace = GetScoreOfDeclaringPeace(proposed, proposer, proposed, out TextObject reason);
+            float peace = GetScoreOfDeclaringPeace(proposed, proposer);
             result.AddFactor(peace / -60000f, new TextObject("{=hAAOEqaJ}Peace interest"));
             AddProposeDiplomacyCostEffects(proposer.Leader, ref result);
             return result;
         }
 
-        public override float GetScoreOfDeclaringWar(IFaction factionDeclaresWar, IFaction factionDeclaredWar, IFaction evaluatingClan, out TextObject warReason)
+        public override float GetScoreOfDeclaringWar(IFaction factionDeclaresWar, IFaction factionDeclaredWar, Clan evaluatingClan, out TextObject warReason, bool includeReason)
         {
             return GetScoreOfDeclaringWar(factionDeclaresWar, factionDeclaredWar, evaluatingClan, out warReason, null).ResultNumber * 10f;
         }
 
-        public override float GetScoreOfDeclaringPeace(IFaction factionDeclaresPeace, IFaction factionDeclaredPeace, IFaction evaluatingClan, out TextObject peaceReason)
+        public override float GetScoreOfDeclaringPeace(IFaction factionDeclaresPeace, IFaction factionDeclaredPeace)
         {
             ExplainedNumber result = new ExplainedNumber(-GetScoreOfDeclaringWar(factionDeclaresPeace, 
-                factionDeclaredPeace, evaluatingClan, out peaceReason, null).ResultNumber);
+                factionDeclaredPeace, null, out TextObject warReason, null).ResultNumber);
 
             War war = TaleWorlds.CampaignSystem.Campaign.Current.GetCampaignBehavior<BKDiplomacyBehavior>().GetWar(factionDeclaresPeace,factionDeclaredPeace);
             if (war != null)
@@ -1018,8 +1018,9 @@ namespace BannerKings.Models.Vanilla
                     ValueTuple<Settlement, Settlement> border = GetBorder(factionDeclaresWar, factionDeclaredWar);
                     if (border.Item1 != null && border.Item2 != null)
                     {
-                        float distance = TaleWorlds.CampaignSystem.Campaign.Current.Models.MapDistanceModel.GetDistance(border.Item1, border.Item2);
-                        float factor = (TaleWorlds.CampaignSystem.Campaign.AverageDistanceBetweenTwoFortifications / distance) - 1f;
+                        float distance = TaleWorlds.CampaignSystem.Campaign.Current.Models.MapDistanceModel.GetDistance(border.Item1, border.Item2, border.Item1.HasPort, border.Item2.HasPort,TaleWorlds.CampaignSystem.Party.MobileParty.NavigationType.All);
+                        float averageDistance = TaleWorlds.CampaignSystem.Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(TaleWorlds.CampaignSystem.Party.MobileParty.NavigationType.Default);
+                        float factor = (averageDistance / distance) - 1f;
                         float baseAbs = MathF.Abs(baseNumber);
                         result.Add(MathF.Clamp(baseAbs * factor * 2f, baseAbs * -2f, 0f), new TextObject("{=fiHYU8X3}Distance between realms"));
                     }
@@ -1068,7 +1069,9 @@ namespace BannerKings.Models.Vanilla
             {
                 foreach (Town fief2 in faction2.Fiefs)
                 {
-                    float d = TaleWorlds.CampaignSystem.Campaign.Current.Models.MapDistanceModel.GetDistance(fief1.Settlement, fief2.Settlement);
+                    float d = TaleWorlds.CampaignSystem.Campaign.Current.Models.MapDistanceModel.GetDistance(fief1.Settlement, fief2.Settlement,
+                                                                                                             fief1.Settlement.HasPort, fief2.Settlement.HasPort,
+                                                                                                             TaleWorlds.CampaignSystem.Party.MobileParty.NavigationType.Default);
                     if (d < distance)
                     {
                         border1 = fief1.Settlement;

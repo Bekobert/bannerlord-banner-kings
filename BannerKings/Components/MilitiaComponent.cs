@@ -23,7 +23,17 @@ namespace BannerKings.Components
 
         private static MobileParty CreateParty(string id, Settlement origin, MobileParty escortTarget)
         {
-            return MobileParty.CreateParty(id + origin, new MilitiaComponent(origin, escortTarget),
+            var party = MobileParty.CreateParty(id + origin, new MilitiaComponent(origin, escortTarget));
+            party.SetPartyUsedByQuest(true);
+            party.Party.SetVisualAsDirty();
+            party.Ai.SetInitiative(0.5f, 1f, float.MaxValue);
+            party.ShouldJoinPlayerBattles = true;
+            party.Aggressiveness = 0.1f;
+            party.SetMoveEscortParty(escortTarget, MobileParty.NavigationType.Default, party.IsTargetingPort); //HasPort
+            party.SetWagePaymentLimit(TaleWorlds.CampaignSystem.Campaign.Current.Models.PartyWageModel.MaxWagePaymentLimit);
+
+            return party;
+            /*return MobileParty.CreateParty(id + origin, new MilitiaComponent(origin, escortTarget),
                 delegate(MobileParty mobileParty)
                 {
                     mobileParty.SetPartyUsedByQuest(true);
@@ -32,15 +42,15 @@ namespace BannerKings.Components
                     mobileParty.ShouldJoinPlayerBattles = true;
                     mobileParty.Aggressiveness = 0.1f;
                     mobileParty.Ai.SetMoveEscortParty(escortTarget);
-                    mobileParty.SetWagePaymentLimit(TaleWorlds.CampaignSystem.Campaign.Current.Models.PartyWageModel.MaxWage);
-                });
+                    mobileParty.SetWagePaymentLimit(TaleWorlds.CampaignSystem.Campaign.Current.Models.PartyWageModel.MaxWagePaymentLimit);
+                });*/
         }
 
         public static void CreateMilitiaEscort(Settlement origin, MobileParty escortTarget, MobileParty reference)
         {
             var caravan = CreateParty($"bk_raisedmilitia_{origin}", origin, escortTarget);
             caravan.InitializeMobilePartyAtPosition(reference.MemberRoster, reference.PrisonRoster, origin.GatePosition);
-            caravan.Ai.SetMoveEscortParty(escortTarget);
+            caravan.SetMoveEscortParty(escortTarget, MobileParty.NavigationType.Default, caravan.IsTargetingPort); //HasPort
             reference.MemberRoster.RemoveIf(roster => roster.Number > 0);
             reference.PrisonRoster.RemoveIf(roster => roster.Number > 0);
             GiveMounts(ref caravan);
@@ -52,11 +62,11 @@ namespace BannerKings.Components
             var behavior = Behavior;
             if (behavior == AiBehavior.EscortParty)
             {
-                MobileParty.Ai.SetMoveEscortParty(Escort);
+                MobileParty.SetMoveEscortParty(Escort, MobileParty.NavigationType.Default, false); //Hasport
             }
             else
             {
-                MobileParty.Ai.SetMoveGoToSettlement(HomeSettlement);
+                MobileParty.SetMoveGoToSettlement(HomeSettlement, MobileParty.NavigationType.Default, false); //Hasport
             }
         }
     }

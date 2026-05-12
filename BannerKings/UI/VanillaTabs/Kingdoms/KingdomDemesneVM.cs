@@ -86,7 +86,7 @@ namespace BannerKings.UI.VanillaTabs.Kingdoms
 
                 foreach (ContractAspect aspect in Title.Contract.ContractAspects)
                 {
-                    TextObject hint = TextObject.Empty;
+                    TextObject hint = new TextObject("");
                     if (aspect is ContractRight) hint = (aspect as ContractRight).EffectText;
 
                     Aspects.Add(new TripleStringItemVM(aspect.AspectType.ToString(),
@@ -166,7 +166,7 @@ namespace BannerKings.UI.VanillaTabs.Kingdoms
         }
 
         [DataSourceMethod]
-        private void ChangeGovernment()
+        /*private void ChangeGovernment()
         {
             List<InquiryElement> aspects = new List<InquiryElement>(4);
             foreach (var government in DefaultGovernments.Instance.All)
@@ -193,10 +193,45 @@ namespace BannerKings.UI.VanillaTabs.Kingdoms
             ShowOptions(new TextObject("Governments"),
                 new TextObject("Governments are a quintessential part of a realm's legal framework. You may propose a change to the government form that will be voted on by the peers. Ruling clans will often strongly disagree with such changes.{newline}{newline}For more information, search for Governments in Encyclopedia."),
                 aspects);
+        }*/
+        private void ChangeGovernment()
+        {
+            List<InquiryElement> aspects = new List<InquiryElement>(4);
+            foreach (var government in DefaultGovernments.Instance.All)
+            {
+                var decision = GetDecision(government);
+                var election = new KingdomElection(decision);
+                election.StartElectionWithoutPlayer();
+                election.DetermineOfficialSupport();
+                float support = election.PossibleOutcomes.Count > 0
+                    ? election.PossibleOutcomes[0].WinChance * 100f
+                    : 0f;
+
+                aspects.Add(new InquiryElement(
+                    government,
+                    new TextObject("{=fgwLSDRL}{NAME} - {SUPPORT}% Support, {INFLUENCE}{INFLUENCE_ICON}")
+                    .SetTextVariable("NAME", government.Name)
+                    .SetTextVariable("SUPPORT", support.ToString("0.00"))
+                    .SetTextVariable("INFLUENCE", decision.GetProposalInfluenceCost())
+                    .SetTextVariable("INFLUENCE_ICON", Utils.TextHelper.INFLUENCE_ICON)
+                    .ToString(),
+                    null,
+                    !government.Equals(Title.Contract.Government) && government.IsKingdomAdequate(Kingdom) &&
+                    Clan.PlayerClan.Influence >= decision.GetProposalInfluenceCost(),
+                    new TextObject("{=wffsaUbg}{DESCRIPTION}{newline}{newline}Effects:{newline}{EFFECTS}")
+                    .SetTextVariable("DESCRIPTION", government.Description)
+                    .SetTextVariable("EFFECTS", government.Effects)
+                    .ToString()
+                    ));
+            }
+
+            ShowOptions(new TextObject("Governments"),
+                new TextObject("Governments are a quintessential part of a realm's legal framework. You may propose a change to the government form that will be voted on by the peers. Ruling clans will often strongly disagree with such changes.{newline}{newline}For more information, search for Governments in Encyclopedia."),
+                aspects);
         }
 
         [DataSourceMethod]
-        private void ChangeSuccession()
+        /*private void ChangeSuccession()
         {
             List<InquiryElement> aspects = new List<InquiryElement>(6);
             foreach (var succession in DefaultSuccessions.Instance.All)
@@ -224,10 +259,46 @@ namespace BannerKings.UI.VanillaTabs.Kingdoms
             ShowOptions(new TextObject("{=EDyKXsvE}Successions"),
                 new TextObject("{=EDyKXsvE}Successions determine how the realm rulership is passed on the death or end of term of the current ruler. You may propose a change to the succession process that will be voted on by the peers.{newline}{newline}For more information, search for Successions in Encyclopedia."),
                 aspects);
+        }*/
+        private void ChangeSuccession()
+        {
+            List<InquiryElement> aspects = new List<InquiryElement>(6);
+            foreach (var succession in DefaultSuccessions.Instance.All)
+            {
+                var decision = GetDecision(succession);
+                var election = new KingdomElection(decision);
+                election.StartElectionWithoutPlayer();
+                election.DetermineOfficialSupport();
+                float support = election.PossibleOutcomes.Count > 0
+                    ? election.PossibleOutcomes[0].WinChance * 100f
+                    : 0f;
+
+                aspects.Add(new InquiryElement(
+                    succession,
+                    new TextObject("{=fgwLSDRL}{NAME} - {SUPPORT}% Support, {INFLUENCE}{INFLUENCE_ICON}")
+                    .SetTextVariable("NAME", succession.Name)
+                    .SetTextVariable("SUPPORT", support.ToString("0.00"))
+                    .SetTextVariable("INFLUENCE", decision.GetProposalInfluenceCost())
+                    .SetTextVariable("INFLUENCE_ICON", Utils.TextHelper.INFLUENCE_ICON)
+                    .ToString(),
+                    null,
+                    !succession.Equals(Title.Contract.Succession) && succession.IsKingdomAdequate(Kingdom) &&
+                    Clan.PlayerClan.Influence >= decision.GetProposalInfluenceCost(),
+                    new TextObject("{=ii0vMxcT}{DESCRIPTION}{newline}{newline}Viable Candidates:{newline}{CANDIDATES}{newline}{newline}Effects:{newline}{EFFECTS}")
+                    .SetTextVariable("DESCRIPTION", succession.Description)
+                    .SetTextVariable("CANDIDATES", succession.CandidatesText)
+                    .SetTextVariable("EFFECTS", succession.ScoreText)
+                    .ToString()
+                    ));
+            }
+
+            ShowOptions(new TextObject("{=EDyKXsvE}Successions"),
+                new TextObject("{=EDyKXsvE}Successions determine how the realm rulership is passed on the death or end of term of the current ruler. You may propose a change to the succession process that will be voted on by the peers.{newline}{newline}For more information, search for Successions in Encyclopedia."),
+                aspects);
         }
 
         [DataSourceMethod]
-        private void ChangeInheritance()
+        /*private void ChangeInheritance()
         {
             List<InquiryElement> aspects = new List<InquiryElement>(6);
             foreach (var inheritance in DefaultInheritances.Instance.All)
@@ -250,10 +321,41 @@ namespace BannerKings.UI.VanillaTabs.Kingdoms
             ShowOptions(new TextObject("{=t9N3L0Oy}Inheritances"),
                 new TextObject("{=t9N3L0Oy}Inheritances determine how clan leadership and properties are passed on the death of the clan head. You may propose a change to the inheritance process that will be voted on by the peers.{newline}{newline}For more information, search for Inheritances in Encyclopedia."),
                 aspects);
+        }*/
+        private void ChangeInheritance()
+        {
+            List<InquiryElement> aspects = new List<InquiryElement>(6);
+            foreach (var inheritance in DefaultInheritances.Instance.All)
+            {
+                var decision = GetDecision(inheritance);
+                var election = new KingdomElection(decision);
+                election.StartElectionWithoutPlayer();
+                election.DetermineOfficialSupport();
+                float support = election.PossibleOutcomes.Count > 0
+                    ? election.PossibleOutcomes[0].WinChance * 100f
+                    : 0f;
+
+                aspects.Add(new InquiryElement(
+                    inheritance,
+                    new TextObject("{=fgwLSDRL}{NAME} - {SUPPORT}% Support, {INFLUENCE}{INFLUENCE_ICON}")
+                    .SetTextVariable("NAME", inheritance.Name)
+                    .SetTextVariable("SUPPORT", support.ToString("0.00"))
+                    .SetTextVariable("INFLUENCE", decision.GetProposalInfluenceCost())
+                    .SetTextVariable("INFLUENCE_ICON", Utils.TextHelper.INFLUENCE_ICON)
+                    .ToString(),
+                    null,
+                    !inheritance.Equals(Title.Contract.Inheritance) &&
+                    Clan.PlayerClan.Influence >= decision.GetProposalInfluenceCost(),
+                    inheritance.Description.ToString()));
+            }
+
+            ShowOptions(new TextObject("{=t9N3L0Oy}Inheritances"),
+                new TextObject("{=t9N3L0Oy}Inheritances determine how clan leadership and properties are passed on the death of the clan head. You may propose a change to the inheritance process that will be voted on by the peers.{newline}{newline}For more information, search for Inheritances in Encyclopedia."),
+                aspects);
         }
 
         [DataSourceMethod]
-        private void ChangeGender()
+        /*private void ChangeGender()
         {
             List<InquiryElement> aspects = new List<InquiryElement>(3);
             foreach (var genderLaw in DefaultGenderLaws.Instance.All)
@@ -264,6 +366,37 @@ namespace BannerKings.UI.VanillaTabs.Kingdoms
                     new TextObject("{=fgwLSDRL}{NAME} - {SUPPORT}% Support, {INFLUENCE}{INFLUENCE_ICON}")
                     .SetTextVariable("NAME", genderLaw.Name)
                     .SetTextVariable("SUPPORT", new KingdomElection(decision).GetLikelihoodForOutcome(0).ToString("0.00"))
+                    .SetTextVariable("INFLUENCE", decision.GetProposalInfluenceCost())
+                    .SetTextVariable("INFLUENCE_ICON", Utils.TextHelper.INFLUENCE_ICON)
+                    .ToString(),
+                    null,
+                    !genderLaw.Equals(Title.Contract.GenderLaw) &&
+                    Clan.PlayerClan.Influence >= decision.GetProposalInfluenceCost(),
+                    genderLaw.Description.ToString()));
+            }
+
+            ShowOptions(new TextObject("{=pdyn2oZQ}Gender Laws"),
+                new TextObject("{=ozbmXS2t}Gender laws determine what gender is or not favorable for positions of power and take precedence in clan inheritances. You may propose a change to the gender law process that will be voted on by the peers.{newline}{newline}For more information, search for Gender Laws in Encyclopedia."),
+                aspects);
+        }*/
+        private void ChangeGender()
+        {
+            List<InquiryElement> aspects = new List<InquiryElement>(3);
+            foreach (var genderLaw in DefaultGenderLaws.Instance.All)
+            {
+                var decision = GetDecision(genderLaw);
+                var election = new KingdomElection(decision);
+                election.StartElectionWithoutPlayer();
+                election.DetermineOfficialSupport();
+                float support = election.PossibleOutcomes.Count > 0
+                    ? election.PossibleOutcomes[0].WinChance * 100f
+                    : 0f;
+
+                aspects.Add(new InquiryElement(
+                    genderLaw,
+                    new TextObject("{=fgwLSDRL}{NAME} - {SUPPORT}% Support, {INFLUENCE}{INFLUENCE_ICON}")
+                    .SetTextVariable("NAME", genderLaw.Name)
+                    .SetTextVariable("SUPPORT", support.ToString("0.00"))
                     .SetTextVariable("INFLUENCE", decision.GetProposalInfluenceCost())
                     .SetTextVariable("INFLUENCE_ICON", Utils.TextHelper.INFLUENCE_ICON)
                     .ToString(),

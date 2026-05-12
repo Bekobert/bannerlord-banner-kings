@@ -49,13 +49,19 @@ namespace BannerKings.Actions
 
             hero.Clan = null;
             hero.CompanionOf = null;
-            clan.InitializeClan(name, name, hero.Culture, Banner.CreateOneColoredBannerWithOneIcon(
+            /*clan.InitializeClan(name, name, hero.Culture, Banner.CreateOneColoredBannerWithOneIcon(
                 settlement.MapFaction.Banner.GetFirstIconColor(), settlement.MapFaction.Banner.GetPrimaryColor(),
-                hero.Culture.PossibleClanBannerIconsIDs.GetRandomElement()), settlement.GatePosition);
+                hero.Culture.PossibleClanBannerIconsIDs.GetRandomElement()), settlement.GatePosition);*/
+            clan.ChangeClanName(name, name);
+            clan.Culture = hero.Culture;
+            clan.Banner = Banner.CreateOneColoredBannerWithOneIcon(
+                settlement.MapFaction.Banner.GetFirstIconColor(),
+                settlement.MapFaction.Banner.GetPrimaryColor(),
+                -1);
             clan.AddRenown(renown);
             hero.Clan = clan;
             clan.SetLeader(hero);
-            clan.UpdateHomeSettlement(settlement);
+            clan.SetInitialHomeSettlement(settlement);
             if (hero.Spouse != null && !Utils.Helpers.IsClanLeader(hero.Spouse))
             {
                 JoinClan(hero.Spouse, clan);
@@ -74,7 +80,7 @@ namespace BannerKings.Actions
 
             if (originalClan != null)
             {
-                ChangeKingdomAction.ApplyByJoinToKingdom(clan, originalClan.Kingdom, false);
+                ChangeKingdomAction.ApplyByJoinToKingdom(clan, originalClan.Kingdom, default, false);
             }
 
             BannerKingsConfig.Instance.TitleManager.RemoveKnights(hero);

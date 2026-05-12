@@ -59,13 +59,35 @@ namespace BannerKings.Managers.Goals.Decisions
             return failedReasons.Count == 0;
         }
 
-        public override void ShowInquiry()
+        /*public override void ShowInquiry()
         {
             var decision = new PeerageKingdomDecision(Clan.PlayerClan.Kingdom.RulingClan, Clan.PlayerClan);
             InformationManager.ShowInquiry(new InquiryData(new TextObject("{=sdpM1PD3}Request Full Peerage").ToString(),
                 new TextObject("{=HCMiSysD}Request full rights of Peerage. The any existing Peer with voting power may participate in the decision. Current support for the approval of {CLAN}: {SUPPORT}%.")
                 .SetTextVariable("CLAN", GetFulfiller().Clan.Name)
                 .SetTextVariable("SUPPORT", new KingdomElection(decision).GetLikelihoodForOutcome(0) * 100f)
+                .ToString(),
+                true,
+                true,
+                GameTexts.FindText("str_selection_widget_accept").ToString(),
+                GameTexts.FindText("str_selection_widget_cancel").ToString(),
+                () => ApplyGoal(),
+                null));
+        }*/
+        public override void ShowInquiry()
+        {
+            var decision = new PeerageKingdomDecision(Clan.PlayerClan.Kingdom.RulingClan, Clan.PlayerClan);
+
+            var election = new KingdomElection(decision);
+            election.StartElectionWithoutPlayer();
+            election.DetermineOfficialSupport();
+            float support = election.PossibleOutcomes.Count > 0 ? election.PossibleOutcomes[0].WinChance * 100f : 0f;
+
+            InformationManager.ShowInquiry(new InquiryData(
+                new TextObject("{=sdpM1PD3}Request Full Peerage").ToString(),
+                new TextObject("{=HCMiSysD}Request full rights of Peerage. The any existing Peer with voting power may participate in the decision. Current support for the approval of {CLAN}: {SUPPORT}%.")
+                .SetTextVariable("CLAN", GetFulfiller().Clan.Name)
+                .SetTextVariable("SUPPORT", support.ToString("0.00"))
                 .ToString(),
                 true,
                 true,
@@ -82,7 +104,11 @@ namespace BannerKings.Managers.Goals.Decisions
             if (clan != Clan.PlayerClan)
             {
                 var election = new KingdomElection(decision);
-                if (election.GetLikelihoodForOutcome(0) < 0.4f) return;
+                //if (election.GetLikelihoodForOutcome(0) < 0.4f) return;
+                election.StartElectionWithoutPlayer();
+                election.DetermineOfficialSupport();
+                float likelihood = election.PossibleOutcomes.Count > 0 ? election.PossibleOutcomes[0].WinChance : 0f;
+                if (likelihood < 0.4f) return;
             }
 
             clan.Kingdom.AddDecision(decision, false);
@@ -93,6 +119,7 @@ namespace BannerKings.Managers.Goals.Decisions
                 MBInformationManager.AddQuickInformation(new TextObject("{=5YsS2g7T}The Peers of {KINGDOM} will now vote on your request.")
                 .SetTextVariable("KINGDOM", Clan.PlayerClan.Kingdom.Name),
                 0,
+                null,
                 null,
                 Utils.Helpers.GetKingdomDecisionSound());
             }

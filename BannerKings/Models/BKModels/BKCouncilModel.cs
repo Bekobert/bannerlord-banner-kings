@@ -11,6 +11,7 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
+using TaleWorlds.CampaignSystem.Party;
 
 namespace BannerKings.Models.BKModels
 {
@@ -149,7 +150,7 @@ namespace BannerKings.Models.BKModels
             if (council.Location != null)
             {
                 float factor = TaleWorlds.CampaignSystem.Campaign.Current.Models.MapDistanceModel.GetDistance(target.Settlement,
-                council.Location.Settlement) / TaleWorlds.CampaignSystem.Campaign.AverageDistanceBetweenTwoFortifications;
+                council.Location.Settlement, target.Settlement.HasPort, council.Location.Settlement.HasPort, MobileParty.NavigationType.Default, out _) / TaleWorlds.CampaignSystem.Campaign.Current.GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(MobileParty.NavigationType.Default);
                 result.AddFactor(factor, new TextObject("{=Frw4p1qD}Distance between {TOWN1} and {TOWN2}")
                     .SetTextVariable("TOWN1", target.Name)
                     .SetTextVariable("TOWN2", council.Location.Name));

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -32,7 +33,11 @@ namespace BannerKings.Behaviours.Diplomacy.Wars
             Dictionary<Town, int> attackerDic = new Dictionary<Town, int>();
             foreach (var fief in Attacker.Fiefs)
             {
-                Settlement settlement = SettlementHelper.FindNearestFortification(x => x.Town != null && x.MapFaction == Defender, fief.Settlement);
+                //Settlement settlement = SettlementHelper.FindNearestFortification(x => x.Town != null && x.MapFaction == Defender, fief.Settlement);
+                Settlement settlement = SettlementHelper.FindNearestFortificationToSettlement(
+                    fief.Settlement,
+                    MobileParty.NavigationType.Default,
+                    x => x.Town != null && x.MapFaction == Defender);
                 if (settlement != null)
                 {
                     Town town = settlement.Town;
@@ -52,12 +57,16 @@ namespace BannerKings.Behaviours.Diplomacy.Wars
             Dictionary<Town, int> defenderDic = new Dictionary<Town, int>();
             foreach (var fief in Defender.Fiefs)
             {
-                Settlement settlement = SettlementHelper.FindNearestFortification(x => 
+                /*Settlement settlement = SettlementHelper.FindNearestFortification(x => 
                 {
                     bool nullTown = x.Town != null;
                     bool attacker = x.MapFaction == Attacker;
                     return nullTown && attacker;
-                }, fief.Settlement);
+                }, fief.Settlement);*/
+                Settlement settlement = SettlementHelper.FindNearestFortificationToSettlement(
+                    fief.Settlement,
+                    MobileParty.NavigationType.Default,
+                    x => x.Town != null && x.MapFaction == Attacker);
                 if (settlement != null)
                 {
                     Town town = settlement.Town;
@@ -197,7 +206,7 @@ namespace BannerKings.Behaviours.Diplomacy.Wars
         {
             if (Demand != null)
             {
-                bool success = Attacker.GetStanceWith(Defender).GetDailyTributePaid(Defender) > 0;
+                bool success = Attacker.GetStanceWith(Defender).GetDailyTributeToPay(Defender) > 0;
                 Demand.EndRebellion(Attacker as Kingdom, Defender as Kingdom, success);
             }
 

@@ -288,17 +288,35 @@ namespace BannerKings.UI
             }
         }
 
-        [HarmonyPatch(typeof(SkillVM), MethodType.Constructor, typeof(SkillObject), typeof(CharacterDeveloperHeroItemVM),
+        /*[HarmonyPatch(typeof(SkillVM), MethodType.Constructor, typeof(SkillObject), typeof(CharacterDeveloperHeroItemVM),
             typeof(Action<PerkVM>))]
         internal class SkillVMConstructorPatch
         {
             private static void Postfix(SkillVM __instance, SkillObject skill, CharacterDeveloperHeroItemVM developerVM,
                 Action<PerkVM> onStartPerkSelection)
             {
-                var explainedNumber = BannerKingsConfig.Instance.LearningModel.CalculateLearningLimit(developerVM.Hero,
-                    developerVM.GetCurrentAttributePoint(skill.CharacterAttribute),
+                var explainedNumber = BannerKingsConfig.Instance.LearningModel.CalculateLearningLimit(
+                    developerVM.Hero,
                     __instance.CurrentFocusLevel,
-                    skill.CharacterAttribute.Name,
+                    skill,
+                    true);
+                __instance.LearningLimitTooltip = new BasicTooltipViewModel(() =>
+                    CampaignUIHelper.GetTooltipForAccumulatingPropertyWithResult(
+                        new TextObject("{=fTKqtNxB}Learning Limit").ToString(), explainedNumber.ResultNumber,
+                        ref explainedNumber));
+            }
+        }*/
+        [HarmonyPatch(typeof(SkillVM), MethodType.Constructor, typeof(SkillObject), typeof(CharacterDeveloperHeroItemVM),
+            typeof(Action<PerkVM>))]
+        internal class SkillVMConstructorPatch
+        {
+            private static void Postfix(SkillVM __instance, SkillObject skill, CharacterDeveloperHeroItemVM heroItem,
+                Action<PerkVM> onStartPerkSelection)
+            {
+                var explainedNumber = BannerKingsConfig.Instance.LearningModel.CalculateLearningLimit(
+                    heroItem.Hero,
+                    __instance.CurrentFocusLevel,
+                    skill,
                     true);
                 __instance.LearningLimitTooltip = new BasicTooltipViewModel(() =>
                     CampaignUIHelper.GetTooltipForAccumulatingPropertyWithResult(
@@ -314,7 +332,7 @@ namespace BannerKings.UI
             {
                 var focus = __instance.GetType()
                     .GetProperty("OrgUnspentFocusPoints", BindingFlags.Instance | BindingFlags.Public);
-                var value = __instance.GetCharacterDeveloper().UnspentFocusPoints;
+                var value = __instance.HeroDeveloper.UnspentFocusPoints;
                 focus.SetValue(__instance, value);
                 __instance.UnspentCharacterPoints = value;
                 return true;
@@ -488,25 +506,19 @@ namespace BannerKings.UI
             }
         }
 
-        [HarmonyPatch(typeof(CharacterCreationGainedPropertiesVM))]
+        /*[HarmonyPatch(typeof(CharacterCreationGainedPropertiesVM))]
         internal class CharacterCreationGainedPropertiesVMPatches
         {
             [HarmonyPrefix]
-            [HarmonyPatch(MethodType.Constructor, typeof(CharacterCreation), typeof(int))]
+            [HarmonyPatch(MethodType.Constructor, typeof(CharacterCreationManager), typeof(int))]
             private static void Prefix1(CharacterCreationGainedPropertiesVM __instance,
-                CharacterCreation characterCreation, int currentIndex)
+                CharacterCreationManager characterCreationManager)
             {
-                var _characterCreation = __instance
+                var _characterCreationManager = __instance
                     .GetType()
-                    .GetField("_characterCreation",
+                    .GetField("_characterCreationManager",
                         BindingFlags.Instance | BindingFlags.NonPublic);
-                _characterCreation.SetValue(__instance, characterCreation);
-
-                var _currentIndex = __instance
-                    .GetType()
-                    .GetField("_currentIndex",
-                        BindingFlags.Instance | BindingFlags.NonPublic);
-                _currentIndex.SetValue(__instance, currentIndex);
+                _characterCreationManager.SetValue(__instance, characterCreationManager);
 
                 var _affectedAttributesMap = __instance
                     .GetType()
@@ -523,10 +535,11 @@ namespace BannerKings.UI
 
                 __instance.GainGroups = new MBBindingList<CharacterCreationGainGroupItemVM>();
                 __instance.GainedTraits = new MBBindingList<EncyclopediaTraitItemVM>();
+
                 foreach (var attributeObj in BKAttributes.AllAttributes)
                 {
                     __instance.GainGroups.Add(
-                        new CharacterCreationGainGroupItemVM(attributeObj, characterCreation, currentIndex));
+                        new CharacterCreationGainGroupItemVM(attributeObj));
                 }
 
                 __instance.UpdateValues();
@@ -540,6 +553,68 @@ namespace BannerKings.UI
                 var attributeValue = Hero.MainHero.GetAttributeValue(characterAttribute);
 
                 var _affectedAttributesMap = (Dictionary<CharacterAttribute, Tuple<int, int>>) __instance
+                    .GetType()
+                    .GetField("_affectedAttributesMap",
+                        BindingFlags.Instance | BindingFlags.NonPublic).GetValue(__instance);
+
+                if (_affectedAttributesMap.ContainsKey(characterAttribute))
+                {
+                    var tuple2 = _affectedAttributesMap[characterAttribute];
+                    _affectedAttributesMap[characterAttribute] = new Tuple<int, int>(tuple2.Item1 + attributeValue, 0);
+                }
+                else
+                {
+                    _affectedAttributesMap.Add(characterAttribute, new Tuple<int, int>(attributeValue, 0));
+                }
+            }
+        }*/
+        [HarmonyPatch(typeof(CharacterCreationGainedPropertiesVM))]
+        internal class CharacterCreationGainedPropertiesVMPatches
+        {
+            [HarmonyPrefix]
+            [HarmonyPatch(MethodType.Constructor, typeof(CharacterCreationManager))]
+            private static void Prefix1(CharacterCreationGainedPropertiesVM __instance,
+                CharacterCreationManager characterCreationManager)
+            {
+                var _characterCreationManager = __instance
+                    .GetType()
+                    .GetField("_characterCreationManager",
+                        BindingFlags.Instance | BindingFlags.NonPublic);
+                _characterCreationManager.SetValue(__instance, characterCreationManager);
+
+                var _affectedAttributesMap = __instance
+                    .GetType()
+                    .GetField("_affectedAttributesMap",
+                        BindingFlags.Instance | BindingFlags.NonPublic);
+                _affectedAttributesMap.SetValue(__instance, new Dictionary<CharacterAttribute, Tuple<int, int>>());
+
+                var _affectedSkillMap = __instance
+                    .GetType()
+                    .GetField("_affectedSkillMap",
+                        BindingFlags.Instance | BindingFlags.NonPublic);
+                _affectedSkillMap.SetValue(__instance, new Dictionary<SkillObject, Tuple<int, int>>());
+
+                __instance.GainGroups = new MBBindingList<CharacterCreationGainGroupItemVM>();
+                __instance.OtherSkills = new MBBindingList<CharacterCreationGainedSkillItemVM>();
+                __instance.GainedTraits = new MBBindingList<EncyclopediaTraitItemVM>();
+
+                foreach (var attributeObj in BKAttributes.AllAttributes)
+                {
+                    __instance.GainGroups.Add(
+                        new CharacterCreationGainGroupItemVM(attributeObj));
+                }
+
+                __instance.UpdateValues();
+            }
+
+            [HarmonyPostfix]
+            [HarmonyPatch("PopulateInitialValues")]
+            private static void Postfix1(CharacterCreationGainedPropertiesVM __instance)
+            {
+                var characterAttribute = BKAttributes.Instance.Wisdom;
+                var attributeValue = Hero.MainHero.GetAttributeValue(characterAttribute);
+
+                var _affectedAttributesMap = (Dictionary<CharacterAttribute, Tuple<int, int>>)__instance
                     .GetType()
                     .GetField("_affectedAttributesMap",
                         BindingFlags.Instance | BindingFlags.NonPublic).GetValue(__instance);
@@ -601,7 +676,7 @@ namespace BannerKings.UI
 
                     __instance.Attributes.Add(item);
 
-                    foreach (var skill2 in characterAttribute.Skills)
+                    foreach (var skill2 in Skills.All.Where(s => BKAttributes.AllAttributes.Contains(s.Attributes.FirstOrDefault())))
                     {
                         __instance.Skills.Add(new SkillVM(skill2, __instance,
                             delegate(PerkVM x) { startSelection.Invoke(__instance, new object[] {x}); }));
@@ -641,7 +716,7 @@ namespace BannerKings.UI
                         new StringPairItemVM(GameTexts.FindText("str_governor_of_label").ToString(), ""));
                 }
 
-                if (MobileParty.MainParty.GetHeroPerkRole(__instance.Hero) != SkillEffect.PerkRole.None)
+                if (MobileParty.MainParty.GetHeroPartyRole(__instance.Hero) != PartyRole.None)
                 {
                     __instance.CharacterStats.Add(
                         new StringPairItemVM(CampaignUIHelper.GetHeroClanRoleText(__instance.Hero, Clan.PlayerClan),

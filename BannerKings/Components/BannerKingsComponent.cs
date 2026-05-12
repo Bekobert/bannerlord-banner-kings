@@ -5,6 +5,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Localization;
 using TaleWorlds.SaveSystem;
 
@@ -30,6 +31,16 @@ namespace BannerKings.Components
         public override TextObject Name => new TextObject(stringName).SetTextVariable("ORIGIN", Home.Name);
 
         public override Settlement HomeSettlement => Home;
+
+        public override Banner GetDefaultComponentBanner()
+        {
+            var clan = HomeSettlement.OwnerClan;
+            if (clan != null) {
+                return new Banner(clan.Banner);
+            }
+
+            return new Banner();
+        }
 
         protected static void GiveMounts(ref MobileParty party)
         {

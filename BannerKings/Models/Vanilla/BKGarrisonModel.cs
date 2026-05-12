@@ -15,9 +15,9 @@ namespace BannerKings.Models.Vanilla
 {
     public class BKGarrisonModel : DefaultSettlementGarrisonModel
     {
-        public override ExplainedNumber CalculateGarrisonChange(Settlement settlement, bool includeDescriptions = false)
+        public override ExplainedNumber CalculateBaseGarrisonChange(Settlement settlement, bool includeDescriptions = false)
         {
-            var baseResult = base.CalculateGarrisonChange(settlement, includeDescriptions);
+            var baseResult = base.CalculateBaseGarrisonChange(settlement, includeDescriptions);
             if (BannerKingsConfig.Instance.PopulationManager != null &&
                 BannerKingsConfig.Instance.PopulationManager.IsSettlementPopulated(settlement))
             {
@@ -107,7 +107,7 @@ namespace BannerKings.Models.Vanilla
                 {
                     int numberOfRegularMembers = mobileParty.Party.NumberOfRegularMembers;
                     float num6 = 1f + (float)mobileParty.Party.MemberRoster.TotalWoundedRegulars / (float)mobileParty.Party.NumberOfRegularMembers;
-                    int limitedPartySize = mobileParty.LimitedPartySize;
+                    int limitedPartySize = mobileParty.Party.PartySizeLimit;
                     float num7 = MathF.Pow(MathF.Min(2f, (float)numberOfRegularMembers / (float)limitedPartySize), 1.2f) * 0.75f;
                     float num8 = (1f - num / num2) * (1f - num / num2);
                     float num9 = 1f;

@@ -310,7 +310,7 @@ namespace BannerKings.Models.Vanilla
             explainedNumber.Add(value, SecurityText);
         }
 
-        private void GetSettlementLoyaltyChangeDueToProjects(Town town, ref ExplainedNumber explainedNumber)
+        /*private void GetSettlementLoyaltyChangeDueToProjects(Town town, ref ExplainedNumber explainedNumber)
         {
             if (town.BuildingsInProgress.IsEmpty<Building>())
             {
@@ -320,7 +320,30 @@ namespace BannerKings.Models.Vanilla
             foreach (var building in town.Buildings)
             {
                 var buildingEffectAmount = building.GetBuildingEffectAmount(BuildingEffectEnum.Loyalty);
-                if (!building.BuildingType.IsDefaultProject && buildingEffectAmount > 0f)
+                if (!building.BuildingType.IsDailyProject && buildingEffectAmount > 0f)
+                {
+                    explainedNumber.Add(buildingEffectAmount, building.Name);
+                }
+            }
+        }*/
+        private void GetSettlementLoyaltyChangeDueToProjects(Town town, ref ExplainedNumber explainedNumber)
+        {
+            if (town.BuildingsInProgress.IsEmpty<Building>())
+            {
+                // AddDefaultDailyBonus yerine CurrentDefaultBuilding kullan
+                Building defaultBuilding = town.CurrentDefaultBuilding;
+                if (defaultBuilding != null)
+                {
+                    defaultBuilding.AddEffectOfBuilding(BuildingEffectEnum.Loyalty, ref explainedNumber);
+                }
+            }
+
+            foreach (var building in town.Buildings)
+            {
+                float buildingEffectAmount = building.BuildingType.GetBaseBuildingEffectAmount(
+                    BuildingEffectEnum.Loyalty, building.CurrentLevel);
+
+                if (!building.BuildingType.IsDailyProject && buildingEffectAmount > 0f)
                 {
                     explainedNumber.Add(buildingEffectAmount, building.Name);
                 }

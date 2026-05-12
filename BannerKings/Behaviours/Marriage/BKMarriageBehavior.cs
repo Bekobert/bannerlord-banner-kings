@@ -10,9 +10,11 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.BarterSystem.Barterables;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
+using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.CampaignSystem.ViewModelCollection;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -215,7 +217,7 @@ namespace BannerKings.Behaviours.Marriage
                         ChangeRelationAction.ApplyPlayerRelation(hero, -3, false);
                     }
 
-                    if (hero.GetHeroTraits().Mercy < 0)
+                    if (hero.GetTraitLevel(DefaultTraits.Mercy) < 0)
                     {
                         if (attraction >= 0.7)
                         {
@@ -230,7 +232,7 @@ namespace BannerKings.Behaviours.Marriage
                             text = new TextObject("{=8vRvXFAg}Thanks... I suppose. Though you'll need more than that to impress me.");
                         }
                     }
-                    else if (hero.GetHeroTraits().Honor > 0)
+                    else if (hero.GetTraitLevel(DefaultTraits.Honor) > 0)
                     {
                         if (attraction >= 0.7)
                         {
@@ -245,7 +247,7 @@ namespace BannerKings.Behaviours.Marriage
                             text = new TextObject("{=9nseh0fu}Thank you. I am looking for spouse candidates. You strike me well yourself.");
                         }
                     }
-                    else if (hero.GetHeroTraits().Calculating > 0)
+                    else if (hero.GetTraitLevel(DefaultTraits.Calculating) > 0)
                     {
                         if (attraction >= 0.7)
                         {
@@ -260,7 +262,7 @@ namespace BannerKings.Behaviours.Marriage
                             text = new TextObject("{=BsuNUiLG}Thank you. I am looking for spouse candidates, and will remember your kindness.");
                         }
                     }
-                    else if (hero.GetHeroTraits().Generosity > 1)
+                    else if (hero.GetTraitLevel(DefaultTraits.Generosity) > 1)
                     {
                         if (attraction >= 0.7)
                         {
@@ -593,6 +595,7 @@ namespace BannerKings.Behaviours.Marriage
                 .SetTextVariable("HERO2", proposedMarriage.Proposed.Name),
                 100,
                 null,
+                null,
                 Utils.Helpers.GetKingdomDecisionSound());
         }
 
@@ -621,8 +624,8 @@ namespace BannerKings.Behaviours.Marriage
 
                 if (proposedMarriage.Alliance)
                 {
-                    FactionManager.DeclareAlliance(proposedMarriage.Proposer.MapFaction,
-                        proposedMarriage.Proposed.MapFaction);
+                    //FactionManager.DeclareAlliance(proposedMarriage.Proposer.MapFaction, proposedMarriage.Proposed.MapFaction);
+                    Campaign.Current.GetCampaignBehavior<AllianceCampaignBehavior>().StartAlliance(proposedMarriage.Proposer.MapFaction as Kingdom, proposedMarriage.Proposed.MapFaction as Kingdom);
                 }
 
                 proposedMarriage = null;

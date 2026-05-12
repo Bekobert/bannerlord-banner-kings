@@ -46,7 +46,7 @@ namespace BannerKings.UI.Extensions
             war = null;
             WarExists = false;
             PeaceExists = false;
-            base.ViewModel.ProposeActionExplanationText = new TextObject("{=kyB8tkgY}Consider proposing a diplomatic action").ToString();
+            //base.ViewModel.ProposeActionExplanationText = new TextObject("{=kyB8tkgY}Consider proposing a diplomatic action").ToString();
             if (kingdomDiplomacy.CurrentSelectedDiplomacyItem != null)
             {
                 if (kingdomDiplomacy.CurrentSelectedDiplomacyItem is KingdomWarItemVM)
@@ -122,8 +122,9 @@ namespace BannerKings.UI.Extensions
                     TruceText = new TextObject("None").ToString();
                 }
 
-                StanceLink stance = currentKingdom.GetStanceWith(targetKingdom);
-                if (stance.IsAllied)
+                //StanceLink stance = currentKingdom.GetStanceWith(targetKingdom);
+                //if (stance.IsAllied)
+                if(currentKingdom.IsAllyWith(targetKingdom))
                 {
                     AllianceText = new TextObject("{=GTQCGxvy}In Effect").ToString();
                     TruceText = new TextObject("{=d92ORtRp}Implicit (Alliance)").ToString();
@@ -141,8 +142,13 @@ namespace BannerKings.UI.Extensions
                 AllianceHint = new BasicTooltipViewModel(() => UIHelper.GetAllianceHint(currentKingdom, targetKingdom));
             }
 
-            KingdomElection election = new KingdomElection(new BKDeclareWarDecision(null, currentKingdom.RulingClan, targetKingdom));
-            WarSupportText = UIHelper.FormatValue(election.GetLikelihoodForOutcome(0));
+            //KingdomElection election = new KingdomElection(new BKDeclareWarDecision(null, currentKingdom.RulingClan, targetKingdom));
+            //WarSupportText = UIHelper.FormatValue(election.GetLikelihoodForOutcome(0));
+            var election = new KingdomElection(new BKDeclareWarDecision(null, currentKingdom.RulingClan, targetKingdom));
+            election.StartElectionWithoutPlayer();
+            election.DetermineOfficialSupport();
+            float warSupport = election.PossibleOutcomes.Count > 0 ? election.PossibleOutcomes[0].WinChance : 0f;
+            WarSupportText = UIHelper.FormatValue(warSupport);
             WarSupportHint = new BasicTooltipViewModel(() => UIHelper.GetWarSupportHint(currentKingdom, targetKingdom));
         }
 

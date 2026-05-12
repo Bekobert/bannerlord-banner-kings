@@ -1,16 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Xml;
 using BannerKings.CampaignContent.Traits;
 using BannerKings.Managers.Cultures;
 using BannerKings.Managers.Items;
 using BannerKings.Utils.Models;
 using Helpers;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Xml;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.AgentOrigins;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
+using TaleWorlds.CampaignSystem.LogEntries;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -19,6 +21,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.ObjectSystem;
+
 using static BannerKings.Managers.PopulationManager;
 using static TaleWorlds.Core.ItemCategory;
 
@@ -42,13 +45,13 @@ namespace BannerKings.Utils
             {
                 if (primary)
                 {
-                    if (perk.PrimaryIncrementType == SkillEffect.EffectIncrementType.Add)
+                    if (perk.PrimaryIncrementType == EffectIncrementType.Add)
                         result.Add(perk.PrimaryBonus, perk.Name);
                     else result.AddFactor(perk.PrimaryBonus, perk.Name);
                 }
                 else
                 {
-                    if (perk.SecondaryIncrementType == SkillEffect.EffectIncrementType.Add)
+                    if (perk.SecondaryIncrementType == EffectIncrementType.Add)
                         result.Add(perk.SecondaryBonus, perk.Name);
                     else result.AddFactor(perk.SecondaryBonus, perk.Name);
                 }
@@ -164,7 +167,7 @@ namespace BannerKings.Utils
             return modifierGroup;
         }
 
-        public static void SetAlliance(IFaction faction1, IFaction faction2)
+        /*public static void SetAlliance(IFaction faction1, IFaction faction2)
         {
             var stance = Clan.PlayerClan.GetStanceWith(Hero.OneToOneConversationHero.Clan);
             if (stance.IsNeutral)
@@ -176,6 +179,33 @@ namespace BannerKings.Utils
                         .SetTextVariable("FACTION1", faction1.Name)
                         .SetTextVariable("FACTION2", faction2.Name),
                         100,
+                        null,
+                        null,
+                        GetKingdomDecisionSound());
+                }
+            }
+        }*/
+
+        public static void SetAlliance(IFaction faction1, IFaction faction2)
+        {
+            if (faction1 is not Kingdom kingdom1 || faction2 is not Kingdom kingdom2)
+                return;
+
+            var allianceBehavior = Campaign.Current.GetCampaignBehavior<IAllianceCampaignBehavior>();
+            if (allianceBehavior == null) return;
+
+            if (!kingdom1.IsAllyWith(kingdom2))
+            {
+                allianceBehavior.StartAlliance(kingdom1, kingdom2);
+
+                if (faction1 == Hero.MainHero.MapFaction || faction2 == Hero.MainHero.MapFaction)
+                {
+                    MBInformationManager.AddQuickInformation(
+                        new TextObject("{=gc8D4iH4}The {FACTION1} and {FACTION2} are now allies.")
+                            .SetTextVariable("FACTION1", faction1.Name)
+                            .SetTextVariable("FACTION2", faction2.Name),
+                        100,
+                        null,
                         null,
                         GetKingdomDecisionSound());
                 }
@@ -409,6 +439,32 @@ namespace BannerKings.Utils
             }
 
             return ConsumptionType.None;
+        }
+
+        public static List<Settlement> GetSuccessfullSiegesInWarForFaction(IFaction faction, StanceLink stance, Func<Settlement, bool> condition)
+        {
+            CampaignTime warStartDate = stance.WarStartDate;
+            return Campaign.Current.LogEntryHistory.GameActionLogs
+                .OfType<SiegeAftermathLogEntry>()
+                .Where(x => x.GameTime >= warStartDate &&
+                            x.CapturedSettlement?.MapFaction == faction &&
+                            x.CapturedSettlement?.Town != null &&
+                            (condition == null || condition(x.CapturedSettlement)))
+                .Select(x => x.CapturedSettlement)
+                .ToList();
+        }
+
+        public static List<Settlement> GetRaidsInWar(IFaction faction, StanceLink stance, Func<Settlement, bool> condition)
+        {
+            CampaignTime warStartDate = stance.WarStartDate;
+            return Campaign.Current.LogEntryHistory.GameActionLogs
+                .OfType<VillageStateChangedLogEntry>()
+                .Where(x => x.GameTime >= warStartDate &&
+                            x.NewState == Village.VillageStates.Looted &&
+                            x.RaiderPartyMapFaction == faction &&
+                            (condition == null || condition(x.Village.Settlement)))
+                .Select(x => x.Village.Settlement)
+                .ToList();
         }
     }
 }

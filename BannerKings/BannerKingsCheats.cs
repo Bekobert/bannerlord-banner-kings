@@ -197,7 +197,9 @@ namespace BannerKings
                 return "Player not in a kingdom";
             }
 
-            FactionManager.DeclareAlliance(Hero.MainHero.MapFaction, kingdom);
+            //FactionManager.DeclareAlliance(Hero.MainHero.MapFaction, kingdom);
+            Campaign.Current.GetCampaignBehavior<AllianceCampaignBehavior>()
+                .StartAlliance(Hero.MainHero.MapFaction as Kingdom, kingdom);
             return "Alliance set.";
         }
     }

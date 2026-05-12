@@ -3,6 +3,7 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.GameComponents;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 using TaleWorlds.ObjectSystem;
 
@@ -20,10 +21,21 @@ namespace BannerKings.Models.Vanilla
 
             if (addGearCosts)
             {
-                var town = currentSettlement?.Town;
+                /*var town = currentSettlement?.Town;
                 if (town == null)
                 {
                     town = SettlementHelper.FindNearestTown().Town;
+                }*/
+                var town = currentSettlement?.Town;
+                if (town == null)
+                {
+                    if (currentSettlement != null)
+                    {
+                        town = SettlementHelper.FindNearestTownToSettlement(
+                            currentSettlement,
+                            MobileParty.NavigationType.Default
+                        );
+                    }
                 }
 
                 var num = 0f;

@@ -28,11 +28,11 @@ namespace BannerKings.Patches
                 IEnumerable<CharacterObject> enumerable;
                 if (data != null && data.CultureData != null)
                 {
-                    enumerable = from x in data.CultureData.GetRandomCulture().NotableAndWandererTemplates
+                    enumerable = from x in data.CultureData.GetRandomCulture().NotableTemplates
                                    where x.Occupation == neededOccupation
                                    select x;
                 }
-                else enumerable = from x in settlement.Culture.NotableAndWandererTemplates
+                else enumerable = from x in settlement.Culture.NotableTemplates
                                   where x.Occupation == neededOccupation
                                   select x;
 
@@ -188,7 +188,7 @@ namespace BannerKings.Patches
                     if (list2.Count > 0)
                     {
                         EnterSettlementAction.ApplyForCharacterOnly(
-                            HeroCreator.CreateHeroAtOccupation(list2.GetRandomElement(), settlement), settlement);
+                            HeroCreator.CreateNotable(list2.GetRandomElement(), settlement), settlement);
                     }
                 }
 
@@ -294,7 +294,7 @@ namespace BannerKings.Patches
                                 BindingFlags.Instance | BindingFlags.NonPublic)
                             .Invoke(__instance, null);
 
-                        if (!__instance.CurrentBuilding.BuildingType.IsDefaultProject)
+                        if (!__instance.CurrentBuilding.BuildingType.IsDailyProject)
                         {
                             __instance.GetType().GetMethod("TickCurrentBuilding",
                                     BindingFlags.Instance | BindingFlags.NonPublic)

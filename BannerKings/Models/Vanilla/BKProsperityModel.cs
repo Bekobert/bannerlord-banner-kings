@@ -184,7 +184,7 @@ namespace BannerKings.Models.Vanilla
             {
                 var num4 = 0f;
                 foreach (var building in from x in fortification.Buildings
-                            where !x.BuildingType.IsDefaultProject && x.CurrentLevel > 0
+                            where !x.BuildingType.IsDailyProject && x.CurrentLevel > 0
                             select x)
                 {
                     num4 += DefaultPerks.Engineering.Apprenticeship.SecondaryBonus;
@@ -196,13 +196,21 @@ namespace BannerKings.Models.Vanilla
                 }
             }
 
-            if (fortification.BuildingsInProgress.IsEmpty())
+            /*if (fortification.BuildingsInProgress.IsEmpty())
             {
                 BuildingHelper.AddDefaultDailyBonus(fortification, BuildingEffectEnum.ProsperityDaily,
                     ref explainedNumber);
+            }*/
+            if (fortification.BuildingsInProgress.IsEmpty())
+            {
+                Building defaultBuilding = fortification.CurrentDefaultBuilding;
+                if (defaultBuilding != null)
+                {
+                    defaultBuilding.AddEffectOfBuilding(BuildingEffectEnum.Prosperity, ref explainedNumber);
+                }
             }
 
-            foreach (var building2 in fortification.Buildings)
+            /*foreach (var building2 in fortification.Buildings)
             {
                 var buildingEffectAmount = building2.GetBuildingEffectAmount(BuildingEffectEnum.Prosperity);
                 if (!building2.BuildingType.IsDefaultProject && buildingEffectAmount > 0f)
@@ -210,12 +218,30 @@ namespace BannerKings.Models.Vanilla
                     explainedNumber.Add(buildingEffectAmount, building2.Name);
                 }
 
-                if (building2.BuildingType == DefaultBuildingTypes.SettlementAquaducts ||
+                if (building2.BuildingType == DefaultBuildingTypes.SettlementWaterworks ||
                     building2.BuildingType == DefaultBuildingTypes.CastleGranary ||
                     building2.BuildingType == DefaultBuildingTypes.SettlementGranary)
                 {
                     PerkHelper.AddPerkBonusForTown(DefaultPerks.Medicine.CleanInfrastructure, fortification,
                         ref explainedNumber);
+                }
+            }*/
+            foreach (var building2 in fortification.Buildings)
+            {
+                float buildingEffectAmount = building2.BuildingType.GetBaseBuildingEffectAmount(
+                    BuildingEffectEnum.Prosperity, building2.CurrentLevel);
+
+                if (!building2.BuildingType.IsDailyProject && buildingEffectAmount > 0f)
+                {
+                    explainedNumber.Add(buildingEffectAmount, building2.Name);
+                }
+
+                if (building2.BuildingType == DefaultBuildingTypes.SettlementWaterworks ||
+                    building2.BuildingType == DefaultBuildingTypes.CastleGranary ||
+                    building2.BuildingType == DefaultBuildingTypes.SettlementWarehouse)
+                {
+                    PerkHelper.AddPerkBonusForTown(DefaultPerks.Medicine.CleanInfrastructure,
+                        fortification, ref explainedNumber);
                 }
             }
 

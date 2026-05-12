@@ -5,6 +5,7 @@ using BannerKings.Managers.Goals.Decisions;
 using BannerKings.Models.Vanilla;
 using BannerKings.Settings;
 using HarmonyLib;
+using Helpers;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
@@ -83,7 +84,7 @@ namespace BannerKings.Behaviours
             if (kingdom == null || party.ActualClan == Clan.PlayerClan || leader.Clan.Influence < 100f)
                 return;
 
-            bool war = FactionManager.GetEnemyKingdoms(kingdom).Count() > 0;
+            bool war = FactionHelper.GetEnemyKingdoms(kingdom).Count() > 0;
             if (war)
             {
                 if (!BannerKingsConfig.Instance.ArmyManagementModel.CanCreateArmy(leader) || 

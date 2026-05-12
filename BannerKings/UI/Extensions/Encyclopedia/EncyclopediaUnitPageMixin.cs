@@ -60,7 +60,12 @@ namespace BannerKings.UI.Extensions.Encyclopedia
             }
             else if (era.Equals(DefaultEras.Instance.FirstEra))
             {
-                SetEquipment((ViewModel.Obj as CharacterObject).AllEquipments);
+                //SetEquipment((ViewModel.Obj as CharacterObject).AllEquipments);
+                var character = ViewModel.Obj as CharacterObject;
+                var allEquipments = character.BattleEquipments
+                    .Concat(character.CivilianEquipments)
+                    .ToList();
+                SetEquipment(allEquipments);
             }
         }
 

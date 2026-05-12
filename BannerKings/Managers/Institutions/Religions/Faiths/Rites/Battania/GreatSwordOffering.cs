@@ -18,7 +18,7 @@ namespace BannerKings.Managers.Institutions.Religions.Faiths.Rites.Battania
                     .SetTextVariable("ITEM", base.selectedItem.GetModifiedItemName()),
                 0, 
                 actionTaker.CharacterObject,
-                "event:/ui/notification/relation");
+                null, "event:/ui/notification/relation");
         }
 
         public override TextObject GetName() => new TextObject("{=GtRd2Arh}Lann-Tairgseadh");

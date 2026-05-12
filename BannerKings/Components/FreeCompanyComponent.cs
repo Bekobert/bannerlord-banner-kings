@@ -56,7 +56,7 @@ namespace BannerKings.Components
             PartyTemplateObject template = Campaign.Current.ObjectManager.GetObjectTypeList<PartyTemplateObject>()
                 .FirstOrDefault(x => x.StringId == $"bk_company_{origin.Culture.StringId}");
 
-            if (template != null)
+            /*if (template != null)
             {
                 var party = MobileParty.CreateParty(id,
                     new FreeCompanyComponent(origin),
@@ -71,7 +71,23 @@ namespace BannerKings.Components
                     });
 
                 party.InitializeMobilePartyAtPosition(template, origin.GatePosition);
-                party.Ai.SetMovePatrolAroundSettlement(origin);
+                party.SetMovePatrolAroundSettlement(origin, MobileParty.NavigationType.Default, origin.HasPort);
+                GiveMounts(ref party);
+                GiveFood(ref party);
+            }*/
+            if (template != null)
+            {
+                var party = MobileParty.CreateParty(id, new FreeCompanyComponent(origin));
+
+                party.SetPartyUsedByQuest(true);
+                party.Party.SetVisualAsDirty();
+                party.Ai.SetInitiative(0.1f, 1f, float.MaxValue);
+                party.ShouldJoinPlayerBattles = true;
+                party.Aggressiveness = 0f;
+                party.SetWagePaymentLimit(Campaign.Current.Models.PartyWageModel.MaxWagePaymentLimit);
+
+                party.InitializeMobilePartyAtPosition(template, origin.GatePosition);
+                party.SetMovePatrolAroundSettlement(origin, MobileParty.NavigationType.Default, origin.HasPort);
                 GiveMounts(ref party);
                 GiveFood(ref party);
             }
@@ -82,7 +98,7 @@ namespace BannerKings.Components
             var behavior = Behavior;
             if (behavior == AiBehavior.EscortParty && Escort != null)
             {
-                MobileParty.Ai.SetMoveEscortParty(Escort);
+                MobileParty.SetMoveEscortParty(Escort, MobileParty.NavigationType.Default, Escort.IsTargetingPort);
 
                 if (MobileParty.MapEvent == null)
                 {
@@ -98,11 +114,15 @@ namespace BannerKings.Components
                         }
 
                         Escort = null;
-                        Settlement settlement = SettlementHelper.FindNearestTown((Settlement town) => town.MapFaction.IsAtWarWith(MobileParty.MapFaction),
-                            MobileParty);
+                        /*Settlement settlement = SettlementHelper.FindNearestTown((Settlement town) => town.MapFaction.IsAtWarWith(MobileParty.MapFaction),
+                            MobileParty);*/
+                        Settlement settlement = SettlementHelper.FindNearestTownToMobileParty(
+                            MobileParty,
+                            MobileParty.NavigationType.Default,
+                            (Settlement town) => town.MapFaction.IsAtWarWith(MobileParty.MapFaction))?.Settlement;
                         PatrolPoint = settlement;
                         Behavior = AiBehavior.PatrolAroundPoint;
-                        MobileParty.Ai.SetMovePatrolAroundSettlement(PatrolPoint);
+                        MobileParty.SetMovePatrolAroundSettlement(PatrolPoint, MobileParty.NavigationType.Default, PatrolPoint.HasPort);
                     }
                 }
             }
@@ -112,7 +132,7 @@ namespace BannerKings.Components
             }
 
             if (Behavior == AiBehavior.PatrolAroundPoint && MobileParty.DefaultBehavior != AiBehavior.PatrolAroundPoint)
-                MobileParty.Ai.SetMovePatrolAroundSettlement(PatrolPoint);
+                MobileParty.SetMovePatrolAroundSettlement(PatrolPoint, MobileParty.NavigationType.Default, PatrolPoint.HasPort);
         }
     }
 }

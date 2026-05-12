@@ -11,23 +11,25 @@ namespace BannerKings.Models.Vanilla
     public class BKPartyHealingModel : DefaultPartyHealingModel
     {
         private static readonly TextObject _starvingText = new TextObject("{=jZYUdkXF}Starving");
-        public override ExplainedNumber GetDailyHealingForRegulars(MobileParty party, bool includeDescriptions = false)
+        public override ExplainedNumber GetDailyHealingForRegulars(PartyBase party, bool isPrisoners, bool includeDescriptions = false)
         {
-            ExplainedNumber bonuses = base.GetDailyHealingForRegulars(party, includeDescriptions);
-            Boolean isInBesiegedStarvingCity = party.CurrentSettlement != null && party.CurrentSettlement.IsUnderSiege && party.CurrentSettlement.IsStarving;
-            if (isInBesiegedStarvingCity && !party.IsGarrison)
+            ExplainedNumber bonuses = base.GetDailyHealingForRegulars(party, isPrisoners, includeDescriptions);
+            MobileParty mobileParty = party.MobileParty;
+            Boolean isInBesiegedStarvingCity = mobileParty.CurrentSettlement != null && mobileParty.CurrentSettlement.IsUnderSiege && mobileParty.CurrentSettlement.IsStarving;
+            if (isInBesiegedStarvingCity && !mobileParty.IsGarrison)
             {
-                int num = MBRandom.RoundRandomized((float)party.MemberRoster.TotalRegulars * 0.1f);
+                int num = MBRandom.RoundRandomized((float)mobileParty.MemberRoster.TotalRegulars * 0.1f);
                 bonuses.Add(-num, _starvingText);
             }
             return bonuses;
         }
 
-        public override ExplainedNumber GetDailyHealingHpForHeroes(MobileParty party, bool includeDescriptions = false)
+        public override ExplainedNumber GetDailyHealingHpForHeroes(PartyBase party, bool isPrisoners, bool includeDescriptions = false)
         {
             ExplainedNumber result = base.GetDailyHealingHpForHeroes(party, includeDescriptions);
             Hero leader = party.LeaderHero;
-            if (leader != null && party.CurrentSettlement != null)
+            MobileParty mobileParty = party.MobileParty;
+            if (leader != null && mobileParty.CurrentSettlement != null)
             {
                 if (BannerKingsConfig.Instance.CourtManager.HasCurrentTask(leader.Clan, DefaultCouncilTasks.Instance.FamilyCare,
                     out float healCompetence))

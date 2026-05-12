@@ -497,7 +497,7 @@ namespace BannerKings.Behaviours
         }
     }
 
-    namespace Patches
+    /*namespace Patches
     {
         [HarmonyPatch(typeof(HeirSelectionCampaignBehavior), "OnHeirSelectionOver")]
         internal class OnHeirSelectionOverPatch
@@ -505,6 +505,24 @@ namespace BannerKings.Behaviours
             private static bool Prefix(List<InquiryElement> element)
             {
                 Hero newLeader = element.First<InquiryElement>().Identifier as Hero;
+                var titles = new List<FeudalTitle>(BannerKingsConfig.Instance.TitleManager.GetAllDeJure(Hero.MainHero));
+                if (titles.Count > 0)
+                {
+                    BannerKingsConfig.Instance.TitleManager.InheritAllTitles(Hero.MainHero, newLeader);
+                }
+
+                return true;
+            }
+        }
+    }*/
+    namespace Patches
+    {
+        [HarmonyPatch(typeof(HeirSelectionCampaignBehavior), "OnHeirSelectionOver")]
+        internal class OnHeirSelectionOverPatch
+        {
+            private static bool Prefix(Hero selectedHeir)
+            {
+                Hero newLeader = selectedHeir;
                 var titles = new List<FeudalTitle>(BannerKingsConfig.Instance.TitleManager.GetAllDeJure(Hero.MainHero));
                 if (titles.Count > 0)
                 {

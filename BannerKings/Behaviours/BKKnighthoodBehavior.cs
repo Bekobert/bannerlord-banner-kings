@@ -15,6 +15,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.ViewModelCollection;
 using TaleWorlds.CampaignSystem.ViewModelCollection.ClanManagement.Categories;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using ActionType = BannerKings.Managers.Titles.ActionType;
@@ -893,7 +894,7 @@ namespace BannerKings.Behaviours
 
                         list.Add(new InquiryElement(hero, 
                             hero.Name.ToString(), 
-                            new ImageIdentifier(CampaignUIHelper.GetCharacterCode(hero.CharacterObject, false)), isEnabled, hint));
+                            new CharacterImageIdentifier(CampaignUIHelper.GetCharacterCode(hero.CharacterObject, false)), isEnabled, hint));
                     }
                 }
                 if (list.Count > 0)

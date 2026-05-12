@@ -17,7 +17,7 @@ namespace BannerKings.Managers.Institutions.Religions.Faiths.Rites.Northern
                     .SetTextVariable("ITEM", base.selectedItem.GetModifiedItemName()),
                 0,
                 actionTaker.CharacterObject,
-                "event:/ui/notification/relation");
+                null, "event:/ui/notification/relation");
         }
 
         public override TextObject GetDescription() => new TextObject("{=doFoWhY5}Other than his Thunder, the almighty God of the holy canopy is known to use his axe to defend the realm of mankind. A votive offering must be offered in his name to show our good faith.");

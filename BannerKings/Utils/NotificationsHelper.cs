@@ -11,6 +11,7 @@ namespace BannerKings.Utils
             MBInformationManager.AddQuickInformation(content,
                 0, 
                 announcer, 
+                null,
                 "event:/ui/notification/relation");
         }
     }

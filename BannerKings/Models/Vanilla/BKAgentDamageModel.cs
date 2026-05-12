@@ -28,12 +28,12 @@ namespace BannerKings.Models.Vanilla
             return result;
         }
 
-        public override float CalculateDamage(in AttackInformation attackInformation, in AttackCollisionData collisionData, in MissionWeapon weapon, float baseDamage)
+        public override float ApplyDamageAmplifications(in AttackInformation attackInformation, in AttackCollisionData collisionData, float baseDamage)
         {
-            var baseResult = base.CalculateDamage(in attackInformation, in collisionData, in weapon, baseDamage);
+            var baseResult = base.ApplyDamageAmplifications(in attackInformation, in collisionData, baseDamage);
             var aggressorCaptain = attackInformation.AttackerCaptainCharacter as CharacterObject;
             var victimCaptain = attackInformation.VictimCaptainCharacter as CharacterObject;
-
+            var weapon = attackInformation.AttackerWeapon;
             var agressorUsage = weapon.CurrentUsageItem;
 
             if (agressorUsage != null && attackInformation.AttackerAgentCharacter is CharacterObject aggressor)

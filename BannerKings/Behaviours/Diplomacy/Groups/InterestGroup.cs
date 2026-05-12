@@ -176,6 +176,7 @@ namespace BannerKings.Behaviours.Diplomacy.Groups
                         .SetTextVariable("GROUP", this.Name),
                         0,
                         hero.CharacterObject,
+                        null,
                         Utils.Helpers.GetKingdomDecisionSound());
                 }
             }
@@ -194,7 +195,8 @@ namespace BannerKings.Behaviours.Diplomacy.Groups
                         .SetTextVariable("HERO", hero.Name)
                         .SetTextVariable("GROUP", this.Name),
                         0,
-                        hero.CharacterObject,
+                        hero.CharacterObject, 
+                        null,
                         Utils.Helpers.GetRelationDecisionSound());
                 }
               

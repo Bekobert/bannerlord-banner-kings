@@ -561,7 +561,7 @@ namespace BannerKings.Patches
             }
         }
 
-        [HarmonyPatch(typeof(MapEvent), "LootDefeatedParties")]
+        /*[HarmonyPatch(typeof(MapEvent), "LootDefeatedParties")]
         public class SiegePatch
         {
             static bool Prefix(ref bool playerCaptured, ref ItemRoster __state, object lootCollector, MapEvent __instance)
@@ -589,7 +589,7 @@ namespace BannerKings.Patches
                     party.ItemRoster.Add(__state);
                 }
             }
-        }
+        }*/
 
         [HarmonyPatch(typeof(HorseComponent))]
         internal class HorseComponentPatches
@@ -782,7 +782,7 @@ namespace BannerKings.Patches
             return demand * MathF.Pow(priceIndex, factor) + prosperity;
         }
 
-        [HarmonyPatch(typeof(NotablesCampaignBehavior), "BalanceGoldAndPowerOfNotable")]
+        /*[HarmonyPatch(typeof(NotablesCampaignBehavior), "BalanceGoldAndPowerOfNotable")]
         internal class BalanceGoldAndPowerOfNotablePatch
         {
             private static bool Prefix(Hero notable)
@@ -797,7 +797,7 @@ namespace BannerKings.Patches
 
                 return true;
             }
-        }
+        }*/
 
         [HarmonyPatch(typeof(WorkshopsCampaignBehavior))]
         internal class WorkshopsCampaignBehaviorPatches

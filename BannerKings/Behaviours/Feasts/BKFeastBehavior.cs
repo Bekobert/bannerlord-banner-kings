@@ -10,6 +10,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Localization;
 using static BannerKings.Behaviours.Feasts.Feast;
+using Helpers;
 
 namespace BannerKings.Behaviours.Feasts
 {
@@ -216,7 +217,7 @@ namespace BannerKings.Behaviours.Feasts
                             else
                             {
                                 party.Ai.DisableAi();
-                                party.Ai.SetMoveGoToSettlement(town.Settlement);
+                                party.SetMoveGoToSettlement(town.Settlement, MobileParty.NavigationType.Default, town.Settlement.HasPort);
                             }
                         }
                     }
@@ -254,12 +255,12 @@ namespace BannerKings.Behaviours.Feasts
             feast.Tick();
             if (feast.EndDate.IsPast)
             {
-                EndFeast(feast, new TextObject());
+                EndFeast(feast, new TextObject(""));
             }
 
             if (settlement.OwnerClan != null && settlement.MapFaction.IsKingdomFaction)
             {
-                if (FactionManager.GetEnemyKingdoms(settlement.MapFaction as Kingdom).Count() > 0)
+                if (FactionHelper.GetEnemyKingdoms(settlement.MapFaction as Kingdom).Count() > 0)
                 {
                     EndFeast(feast, new TextObject("{=4oTFuJYd}The kingdom is at war!"));
                 }

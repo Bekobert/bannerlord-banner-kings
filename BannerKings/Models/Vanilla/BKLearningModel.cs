@@ -60,6 +60,7 @@ namespace BannerKings.Models.Vanilla
             return base.GetXpRequiredForSkillLevel(skillLevel);
         }
 
+        /*
         public override List<Tuple<SkillObject, int>> GetSkillsDerivedFromTraits(Hero hero, CharacterObject templateCharacter = null, bool isByNaturalGrowth = false)
         {
             List <Tuple<SkillObject, int>> list =  base.GetSkillsDerivedFromTraits(hero, templateCharacter, isByNaturalGrowth);
@@ -94,7 +95,9 @@ namespace BannerKings.Models.Vanilla
             list.Add(new Tuple<SkillObject, int>(BKSkills.Instance.Theology, (int)theology));
             return list;
         }
+        */
 
+        /*
         public override float CalculateLearningRate(Hero hero, SkillObject skill)
         {
             ExplainedNumber result = CalculateLearningRate(hero, 
@@ -117,7 +120,9 @@ namespace BannerKings.Models.Vanilla
 
             return result.ResultNumber;
         }
+        */
 
+        /*
         public ExplainedNumber CalculateLearningRate(Hero hero, int attributeValue, int focusValue, int skillValue, TextObject attributeName, bool includeDescriptions = false)
         {
             if (skillValue >= 500)
@@ -143,7 +148,21 @@ namespace BannerKings.Models.Vanilla
             result.LimitMin(0.05f);
             return result; 
         }
+        */
 
+        /*
+        public ExplainedNumber CalculateLearningLimit(Hero hero, int attributeValue, int focusValue, TextObject attributeName, bool includeDescriptions = false)
+        {
+            var result = new ExplainedNumber(100f, includeDescriptions);
+            result.AddFactor(focusValue * 15f, new TextObject("{=fa3Dmxdo}Skill Focus"));
+            if (hero.GetPerkValue(BKPerks.Instance.ScholarshipMagnumOpus))
+            {
+                result.Add(focusValue * 15f, BKPerks.Instance.ScholarshipMagnumOpus.Name);
+            }
+            return result;
+        }
+        */  
+        /*
         public override ExplainedNumber CalculateLearningRate(int attributeValue, int focusValue, int skillValue,
             int characterLevel, TextObject attributeName, bool includeDescriptions = false)
         {
@@ -152,7 +171,9 @@ namespace BannerKings.Models.Vanilla
             baseResult.LimitMin(0.05f);
             return baseResult;
         }
+        */
 
+        /*
         public ExplainedNumber CalculateLearningLimit(Hero hero, int attributeValue, int focusValue, TextObject attributeName, bool includeDescriptions = false)
         {
             var baseResult = base.CalculateLearningLimit(attributeValue, focusValue, attributeName, includeDescriptions);
@@ -161,6 +182,18 @@ namespace BannerKings.Models.Vanilla
                 baseResult.Add(focusValue * 15f, BKPerks.Instance.ScholarshipMagnumOpus.Name);
             }
 
+
+            return baseResult;
+        }
+        */
+
+        public ExplainedNumber CalculateLearningLimit(Hero hero, int focusValue, SkillObject skill, bool includeDescriptions = false)
+        {
+            var baseResult = base.CalculateLearningLimit(hero.CharacterAttributes, focusValue, skill, includeDescriptions);
+            if (hero.GetPerkValue(BKPerks.Instance.ScholarshipMagnumOpus))
+            {
+                baseResult.Add(focusValue * 15f, BKPerks.Instance.ScholarshipMagnumOpus.Name);
+            }
 
             return baseResult;
         }

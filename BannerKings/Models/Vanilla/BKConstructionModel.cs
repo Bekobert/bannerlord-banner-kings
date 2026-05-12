@@ -66,7 +66,7 @@ namespace BannerKings.Models.Vanilla
         public List<ValueTuple<ItemObject, int>> GetMaterialRequirements(Building project)
         {
             List<ValueTuple<ItemObject, int>> list = new List<(ItemObject, int)>();
-            if (project.BuildingType.IsDefaultProject)
+            if (project.BuildingType.IsDailyProject)
             {
                 return list;
             }
@@ -81,7 +81,7 @@ namespace BannerKings.Models.Vanilla
 
             BuildingType type = project.BuildingType;
             int level = project.CurrentLevel;
-            if (type == DefaultBuildingTypes.Wall || type == DefaultBuildingTypes.Fortifications)
+            if (type == DefaultBuildingTypes.SettlementFortifications || type == DefaultBuildingTypes.CastleFortifications)
             {
                 toolsProportion = 0.1f;
                 if (level != 0)
@@ -90,9 +90,13 @@ namespace BannerKings.Models.Vanilla
                     limeProportion = 0.8f;
                 }
             }
-            else if (type == DefaultBuildingTypes.CastleBarracks || type == DefaultBuildingTypes.CastleMilitiaBarracks ||
+            /*else if (type == DefaultBuildingTypes.CastleBarracks || type == DefaultBuildingTypes.CastleMilitiaBarracks ||
                 type == DefaultBuildingTypes.SettlementGarrisonBarracks || type == DefaultBuildingTypes.SettlementMilitiaBarracks ||
                 type == DefaultBuildingTypes.CastleFairgrounds || type == DefaultBuildingTypes.SettlementFairgrounds ||
+                type == DefaultBuildingTypes.SettlementMarketplace)
+            {*/
+            else if (type == DefaultBuildingTypes.CastleBarracks ||
+                type == DefaultBuildingTypes.SettlementBarracks ||
                 type == DefaultBuildingTypes.SettlementMarketplace)
             {
                 if (level == 0)
@@ -113,7 +117,7 @@ namespace BannerKings.Models.Vanilla
                     toolsProportion = 0.1f;
                 }
             }
-            else if (type == DefaultBuildingTypes.SettlementForum || type == DefaultBuildingTypes.SettlementAquaducts ||
+            else if (type == DefaultBuildingTypes.SettlementMarketplace || type == DefaultBuildingTypes.SettlementWaterworks ||
                 type == BKBuildings.Instance.Theater)
             {
                 if (level == 0)
@@ -393,7 +397,7 @@ namespace BannerKings.Models.Vanilla
 
                 if (currentSettlement?.Town == town)
                 {
-                    SkillHelper.AddSkillBonusForTown(DefaultSkills.Engineering,
+                    SkillHelper.AddSkillBonusForTown(
                         DefaultSkillEffects.TownProjectBuildingBonus, town, ref result);
                     PerkHelper.AddPerkBonusForTown(DefaultPerks.Steward.ForcedLabor, town, ref result);
 
@@ -412,12 +416,21 @@ namespace BannerKings.Models.Vanilla
                         }
 
                         var building = town.BuildingsInProgress.Peek();
-                        if ((building.BuildingType == DefaultBuildingTypes.Fortifications ||
+                        /*if ((building.BuildingType == DefaultBuildingTypes.Fortifications ||
                              building.BuildingType == DefaultBuildingTypes.CastleBarracks ||
                              building.BuildingType == DefaultBuildingTypes.CastleMilitiaBarracks ||
                              building.BuildingType == DefaultBuildingTypes.SettlementGarrisonBarracks ||
                              building.BuildingType == DefaultBuildingTypes.SettlementMilitiaBarracks ||
                              building.BuildingType == DefaultBuildingTypes.SettlementAquaducts) &&
+                            town.Governor.GetPerkValue(DefaultPerks.Engineering.Stonecutters))
+                        {*/
+                        if ((building.BuildingType == DefaultBuildingTypes.SettlementFortifications ||
+                             building.BuildingType == DefaultBuildingTypes.CastleFortifications ||
+                             building.BuildingType == DefaultBuildingTypes.CastleBarracks ||
+                             building.BuildingType == DefaultBuildingTypes.CastleGuardHouse ||
+                             building.BuildingType == DefaultBuildingTypes.SettlementBarracks ||
+                             building.BuildingType == DefaultBuildingTypes.SettlementGuardHouse ||
+                             building.BuildingType == DefaultBuildingTypes.SettlementWaterworks) &&
                             town.Governor.GetPerkValue(DefaultPerks.Engineering.Stonecutters))
                         {
                             result.AddFactor(DefaultPerks.Engineering.Stonecutters.PrimaryBonus,
@@ -442,19 +455,31 @@ namespace BannerKings.Models.Vanilla
             }
 
             var buildingType = town.BuildingsInProgress.IsEmpty() ? null : town.BuildingsInProgress.Peek().BuildingType;
-            if (DefaultBuildingTypes.MilitaryBuildings.Contains(buildingType))
+            //if (DefaultBuildingTypes.MilitaryBuildings.Contains(buildingType))
+            if(buildingType != null && buildingType.IsMilitaryProject)
             {
                 PerkHelper.AddPerkBonusForTown(DefaultPerks.TwoHanded.Confidence, town, ref result);
             }
 
             if (buildingType == DefaultBuildingTypes.SettlementMarketplace ||
-                buildingType == DefaultBuildingTypes.SettlementAquaducts ||
-                buildingType == DefaultBuildingTypes.SettlementLimeKilns)
+                buildingType == DefaultBuildingTypes.SettlementWaterworks ||   //buildingType == DefaultBuildingTypes.SettlementAquaducts ||
+                buildingType == DefaultBuildingTypes.SettlementRoadsAndPaths)    //buildingType == DefaultBuildingTypes.SettlementLimeKilns)
             {
                 PerkHelper.AddPerkBonusForTown(DefaultPerks.Trade.SelfMadeMan, town, ref result);
             }
 
-            var effectOfBuildings = town.GetEffectOfBuildings(BuildingEffectEnum.Construction);
+            //var effectOfBuildings = town.GetEffectOfBuildings(BuildingEffectEnum.Construction);
+
+            float effectOfBuildings = 0f;
+            foreach (Building building in town.Buildings)
+            {
+                if (building.BuildingType.HasEffect(BuildingEffectEnum.ConstructionPerDay))
+                {
+                    effectOfBuildings += Campaign.Current.Models.BuildingEffectModel
+                        .GetBuildingEffect(building, BuildingEffectEnum.ConstructionPerDay).ResultNumber;
+                }
+            }
+
             if (effectOfBuildings > 0f)
             {
                 result.Add(effectOfBuildings, GameTexts.FindText("str_building_bonus"));

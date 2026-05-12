@@ -18,7 +18,7 @@ namespace BannerKings.Managers.Skills
 
         public override void Initialize()
         {
-            Scholarship = Game.Current.ObjectManager.RegisterPresumedObject(new SkillObject("Scholarship"));
+            /*Scholarship = Game.Current.ObjectManager.RegisterPresumedObject(new SkillObject("Scholarship"));
             Scholarship.Initialize(new TextObject("{=SvfaUDRR}Scholarship"),
                     new TextObject("{=6vdekDjR}Reading and writting competence as well as knowledge over literary and legal matters."),
                     SkillObject.SkillTypeEnum.Personal)
@@ -34,7 +34,21 @@ namespace BannerKings.Managers.Skills
             Lordship.Initialize(new TextObject("{=dwMA32rq}Lordship"),
                     new TextObject("{=7LeiEP5f}Ability to deal with legal administration of titles and feudal contracts."),
                     SkillObject.SkillTypeEnum.Personal)
-                .SetAttribute(BKAttributes.Instance.Wisdom);
+                .SetAttribute(BKAttributes.Instance.Wisdom);*/
+            Scholarship.Initialize(
+                new TextObject("{=SvfaUDRR}Scholarship"),
+                new TextObject("{=6vdekDjR}Reading and writting competence as well as knowledge over literary and legal matters."),
+                new CharacterAttribute[] { BKAttributes.Instance.Wisdom });
+
+            Theology.Initialize(
+                new TextObject("{=SRo2AK0z}Theology"),
+                new TextObject("{=mrDhJePb}Understanding over spiritual matters. Normally reserved for preachers and the most pious faithful."),
+                new CharacterAttribute[] { BKAttributes.Instance.Wisdom });
+
+            Lordship.Initialize(
+                new TextObject("{=dwMA32rq}Lordship"),
+                new TextObject("{=7leiEP5f}Ability to deal with legal administration of titles and feudal contracts."),
+                new CharacterAttribute[] { BKAttributes.Instance.Wisdom });
         }
 
         private struct ConfigHolder

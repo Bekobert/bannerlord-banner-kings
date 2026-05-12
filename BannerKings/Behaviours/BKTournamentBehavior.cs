@@ -5,6 +5,7 @@ using Helpers;
 using SandBox.Tournaments.MissionLogics;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -38,12 +39,17 @@ namespace BannerKings.Behaviours
                     var education = BannerKingsConfig.Instance.EducationManager.GetHeroEducation(Hero.MainHero);
                     if (education.HasPerk(BKPerks.Instance.GladiatorTourDeCalradia))
                     {
-                        var resultTown = SettlementHelper.FindNearestTown((Settlement s) =>
+                        /*var resultTown = SettlementHelper.FindNearestTown((Settlement s) =>
                         {
                             return s.Town.HasTournament;
                         },
                         null
-                        ).Town;
+                        ).Town;*/
+                        var resultTown = SettlementHelper.FindNearestTownToSettlement(
+                            town.Settlement,
+                            MobileParty.NavigationType.Default,
+                            s => s.IsTown && s.Town.HasTournament
+                        );
 
                         var game = TaleWorlds.CampaignSystem.Campaign.Current.TournamentManager.GetTournamentGame(resultTown);
                         if (resultTown != null)

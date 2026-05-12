@@ -668,7 +668,7 @@ namespace BannerKings.Behaviours
                 foreach (WarPartyComponent party in clan.WarPartyComponents)
                 {
                     int count = MathF.Min(MBRandom.RandomInt(3, 5),
-                        party.MobileParty.LimitedPartySize - party.MobileParty.MemberRoster.TotalManCount);
+                        party.MobileParty.Party.PartySizeLimit - party.MobileParty.MemberRoster.TotalManCount);
                     if (count > 0)
                     {
                         var troop = troops.GetRandomElement();
@@ -703,13 +703,13 @@ namespace BannerKings.Behaviours
 
         private void JoinArmies(Clan clan)
         {
-            foreach (Hero lord in clan.Lords)
+            foreach (Hero lord in clan.AliveLords)
             {
                 if (lord == clan.Leader || lord.IsChild || lord.IsPrisoner || !lord.IsPartyLeader) continue;
 
                 MobileParty party = lord.PartyBelongedTo;
                 if (party.Army != null || party.TargetParty != null || party.MapEvent != null ||
-                    party.MemberRoster.TotalManCount < (party.LimitedPartySize * 0.7f) ||
+                    party.MemberRoster.TotalManCount < (party.Party.PartySizeLimit * 0.7f) ||
                     party.TotalFoodAtInventory < (party.MemberRoster.TotalManCount * 0.5f)) continue;
 
                 if (FactionHelper.GetEnemyKingdoms(clan.Kingdom).Count() > 0)
@@ -723,7 +723,7 @@ namespace BannerKings.Behaviours
                     Army army = clan.Kingdom.Armies.GetRandomElement();
                     if (army != null)
                     {
-                        SetPartyAiAction.GetActionForEscortingParty(party, army.LeaderParty);
+                        SetPartyAiAction.GetActionForEscortingParty(party, army.LeaderParty, MobileParty.NavigationType.Default, false, false); //.HasPort
                     }
                 }
             }
@@ -751,7 +751,14 @@ namespace BannerKings.Behaviours
                     }
                 }
 
-                Settlement nearest = SettlementHelper.FindNearestFortification(x => x.OwnerClan == clan);
+                Settlement nearest = null;
+                if (toDismiss.Count > 0)
+                {
+                    nearest = SettlementHelper.FindNearestFortificationToMobileParty(
+                        toDismiss[0],
+                        MobileParty.NavigationType.Default,
+                        x => x.OwnerClan == clan);
+                }
                 if (nearest == null)
                 {
                     Town town = clan.Kingdom.Fiefs.GetRandomElement();
@@ -820,6 +827,7 @@ namespace BannerKings.Behaviours
                             .SetTextVariable("HERO", notable.Name),
                             0,
                             steward.Member.CharacterObject,
+                            null,
                             Utils.Helpers.GetKingdomDecisionSound());
                     }
                 }
@@ -849,6 +857,7 @@ namespace BannerKings.Behaviours
                         .SetTextVariable("NOTABLE", notable.Name),
                         0,
                         chancellor.Member.CharacterObject,
+                        null,
                         Utils.Helpers.GetKingdomDecisionSound());
                 }
             }
@@ -869,7 +878,7 @@ namespace BannerKings.Behaviours
 
                     foreach (var h in Hideout.All)
                     {
-                        if (hideout.IsInfested && fief.Settlement.Position2D.DistanceSquared(hideout.Settlement.Position2D) < 40f * 40f)
+                        if (hideout.IsInfested && fief.Settlement.GatePosition.DistanceSquared(hideout.Settlement.GatePosition) < 40f * 40f)
                         {
                             hideout = h;
                             town = fief;
@@ -897,6 +906,7 @@ namespace BannerKings.Behaviours
                             .SetTextVariable("FIEF", town.Name),
                             0,
                             spymaster.Member.CharacterObject,
+                            null,
                             Utils.Helpers.GetKingdomDecisionSound());
                     }
                 }
@@ -933,6 +943,7 @@ namespace BannerKings.Behaviours
                             .SetTextVariable("HERO", clanLeader.Name),
                             0,
                             chancellor.Member.CharacterObject,
+                            null,
                             Utils.Helpers.GetKingdomDecisionSound());
                     }
                 }
@@ -941,7 +952,7 @@ namespace BannerKings.Behaviours
             if (BannerKingsConfig.Instance.CourtManager.HasCurrentTask(council, DefaultCouncilTasks.Instance.EducateFamilyAntiquarian,
                out float antiquarianCompetence))
             {
-                foreach (var member in clan.Lords)
+                foreach (var member in clan.AliveLords)
                 {
                     member.AddSkillXp(BKSkills.Instance.Scholarship, 10 * antiquarianCompetence);
                 }
@@ -1004,6 +1015,7 @@ namespace BannerKings.Behaviours
                             .SetTextVariable("ITEM", item.Name),
                             0,
                             smith.Member.CharacterObject,
+                            null,
                             Utils.Helpers.GetKingdomDecisionSound());
                     }
                 }
@@ -1043,6 +1055,7 @@ namespace BannerKings.Behaviours
                                 .SetTextVariable("HERO", notable.Name),
                                 0,
                                 spiritual.Member.CharacterObject,
+                                null,
                                 Utils.Helpers.GetKingdomDecisionSound());
                         }
                     }
@@ -1073,6 +1086,7 @@ namespace BannerKings.Behaviours
                                 .SetTextVariable("HERO", hero.Name),
                                 0,
                                 spiritual.Member.CharacterObject,
+                                null,
                                 Utils.Helpers.GetKingdomDecisionSound());
                         }
                     }
@@ -1247,7 +1261,7 @@ namespace BannerKings.Behaviours
             foreach (var skill in traits)
             {
                 if (template != null) break;
-                template = (from x in culture.NotableAndWandererTemplates
+                template = (from x in culture.NotableTemplates
                     where x.Occupation == Occupation.Wanderer && x.GetSkillValue(skill) >= 50
                     select x).GetRandomElementInefficiently();
             }
@@ -1332,19 +1346,19 @@ namespace BannerKings.Behaviours
             var genderLaw = title.Contract.GenderLaw;
             if (genderLaw == DefaultGenderLaws.Instance.Agnatic)
             {
-                template = (from e in clan.Culture.NotableAndWandererTemplates
+                template = (from e in clan.Culture.NotableTemplates
                             where e.Occupation == Occupation.Wanderer && !e.IsFemale
                             select e).GetRandomElementInefficiently();
             }
             else if (genderLaw == DefaultGenderLaws.Instance.Enatic)
             {
-                template = (from e in clan.Culture.NotableAndWandererTemplates
+                template = (from e in clan.Culture.NotableTemplates
                             where e.Occupation == Occupation.Wanderer && e.IsFemale
                             select e).GetRandomElementInefficiently();
             }
             else
             {
-                template = (from e in clan.Culture.NotableAndWandererTemplates
+                template = (from e in clan.Culture.NotableTemplates
                             where e.Occupation == Occupation.Wanderer
                             select e).GetRandomElementInefficiently();
             }
@@ -1382,7 +1396,7 @@ namespace BannerKings.Behaviours
             BannerKingsConfig.Instance.TitleManager.GrantKnighthood(title, hero, title.deJure, ignoreCosts);
             EquipmentHelper.AssignHeroEquipmentFromEquipment(hero, roster.AllEquipments.GetRandomElement());
             var mainParty = hero.PartyBelongedTo == MobileParty.MainParty;
-            MobilePartyHelper.CreateNewClanMobileParty(hero, clan, out mainParty);
+            MobilePartyHelper.CreateNewClanMobileParty(hero, clan);
             var component = clan.WarPartyComponents.FirstOrDefault(x => x.Leader == hero);
             if (component != null)
             {

@@ -1,4 +1,5 @@
-﻿using BannerKings.Managers.Education.Lifestyles;
+﻿using BannerKings.CampaignContent.Traits;
+using BannerKings.Managers.Education.Lifestyles;
 using BannerKings.Managers.Skills;
 using BannerKings.Utils;
 using System.Collections.Generic;
@@ -134,23 +135,29 @@ namespace BannerKings.Behaviours
                                   hero.GetTraitLevel(DefaultTraits.Smuggler);
 
                 var politicianWeight =
-                    hero.GetTraitLevel(DefaultTraits.Politician) + hero.GetTraitLevel(DefaultTraits.Commander);
+                    //hero.GetTraitLevel(DefaultTraits.Politician) + hero.GetTraitLevel(DefaultTraits.Commander);
+                    hero.GetTraitLevel(DefaultTraits.Calculating) + hero.GetTraitLevel(DefaultTraits.Commander);
 
-                var merchantWeight = hero.GetTraitLevel(DefaultTraits.Blacksmith) + hero.GetTraitLevel(DefaultTraits.Manager);
+                //var merchantWeight = hero.GetTraitLevel(DefaultTraits.Blacksmith) + hero.GetTraitLevel(DefaultTraits.Manager);
+                var merchantWeight = hero.GetTraitLevel(DefaultTraits.Blacksmith) + hero.GetTraitLevel(DefaultTraits.Trader);
                 var artisanWeight = hero.GetTraitLevel(DefaultTraits.Blacksmith) * 3f;
 
                 var siegeWeight = hero.GetTraitLevel(DefaultTraits.Siegecraft);
 
                 var healerWeight = hero.GetTraitLevel(DefaultTraits.Surgery);
 
-                var warriorWeight = hero.GetTraitLevel(DefaultTraits.ArcherFIghtingSkills) +
+                /*var warriorWeight = hero.GetTraitLevel(DefaultTraits.ArcherFIghtingSkills) +
                                     hero.GetTraitLevel(DefaultTraits.CavalryFightingSkills) +
                                     hero.GetTraitLevel(DefaultTraits.HuscarlFightingSkills) +
                                     hero.GetTraitLevel(DefaultTraits.HopliteFightingSkills) +
                                     hero.GetTraitLevel(DefaultTraits.HorseArcherFightingSkills) +
                                     hero.GetTraitLevel(DefaultTraits.KnightFightingSkills) +
                                     hero.GetTraitLevel(DefaultTraits.PeltastFightingSkills) +
-                                    hero.GetTraitLevel(DefaultTraits.Fighter);
+                                    hero.GetTraitLevel(DefaultTraits.Fighter);*/
+                var warriorWeight = hero.GetTraitLevel(BKTraits.Instance.AptitudeViolence) +
+                    hero.GetTraitLevel(DefaultTraits.Commander) +
+                    hero.GetTraitLevel(DefaultTraits.SergeantCommandSkills) +
+                    hero.GetTraitLevel(DefaultTraits.Valor);
 
                 var mercenaryWeight = hero.GetTraitLevel(DefaultTraits.RogueSkills) - hero.GetTraitLevel(DefaultTraits.Honor);
 

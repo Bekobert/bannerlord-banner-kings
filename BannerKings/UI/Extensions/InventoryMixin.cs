@@ -69,7 +69,7 @@ namespace BannerKings.UI.Extensions
             }
 
             CharacterObject character = (CharacterObject)AccessTools2.Field(inventoryVM.GetType(), "_currentCharacter").GetValue(inventoryVM);
-            inventoryVM.MainCharacter.FillFrom(character.HeroObject, -1, inventoryVM.IsCivilianFilterHighlightEnabled, false);
+            inventoryVM.MainCharacter.FillFrom(character.HeroObject, -1, inventoryVM.IsEquipmentSetFiltersHighlighted, false);
         }
 
         private void Transfer(InventoryLogic logic, Hero hero, EquipmentIndex index)
@@ -78,13 +78,12 @@ namespace BannerKings.UI.Extensions
             if (element.Item != null)
             {
                 TransferCommand command = TransferCommand.Transfer(1,
-                                           InventoryLogic.InventorySide.Equipment,
+                                           InventoryLogic.InventorySide.BattleEquipment,
                                            InventoryLogic.InventorySide.PlayerInventory,
                                            new ItemRosterElement(element, 1),
                                            index,
                                            index,
-                                           hero.CharacterObject,
-                                           false);
+                                           hero.CharacterObject);
 
                 logic.AddTransferCommand(command);
             }

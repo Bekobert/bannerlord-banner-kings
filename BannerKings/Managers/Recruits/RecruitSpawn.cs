@@ -13,7 +13,7 @@ namespace BannerKings.Managers.Recruits
     {
         public RecruitSpawn() : base("") 
         {
-            Initialize(TextObject.Empty, TextObject.Empty);
+            Initialize(new TextObject(""), new TextObject(""));
             FiefStrings = new HashSet<string>(1);
         }
 

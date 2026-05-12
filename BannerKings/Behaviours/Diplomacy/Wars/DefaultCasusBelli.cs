@@ -10,6 +10,7 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Localization;
+using TaleWorlds.CampaignSystem.Party;
 
 namespace BannerKings.Behaviours.Diplomacy.Wars
 {
@@ -78,7 +79,7 @@ namespace BannerKings.Behaviours.Diplomacy.Wars
                 (War war) =>
                 {
                     StanceLink attackerLink = war.Attacker.GetStanceWith(war.Defender);
-                    List<Settlement> attackerConquests = DiplomacyHelper.GetSuccessfullSiegesInWarForFaction(war.Attacker,
+                    List<Settlement> attackerConquests = Utils.Helpers.GetSuccessfullSiegesInWarForFaction(war.Attacker,
                        attackerLink, (Settlement x) => x.Town != null);
 
                     return attackerConquests.FindAll(x => x.Culture == war.Defender.Culture && x.MapFaction == war.Attacker).Count >= 1;
@@ -91,10 +92,11 @@ namespace BannerKings.Behaviours.Diplomacy.Wars
                         War possibleWar = new War(faction1, faction2, null);
                         if (possibleWar.DefenderFront != null && possibleWar.AttackerFront != null)
                         {
-                            bool strength = faction2.TotalStrength >= (faction1.TotalStrength * 0.8f);
+                            bool strength = faction2.CurrentTotalStrength >= (faction1.CurrentTotalStrength * 0.8f);
                             float distance = TaleWorlds.CampaignSystem.Campaign.Current.Models.MapDistanceModel.GetDistance(possibleWar.DefenderFront.Settlement,
-                                     possibleWar.AttackerFront.Settlement);
-                            float factor = distance / TaleWorlds.CampaignSystem.Campaign.AverageDistanceBetweenTwoFortifications;
+                                     possibleWar.AttackerFront.Settlement, possibleWar.DefenderFront.Settlement.HasPort, possibleWar.AttackerFront.Settlement.HasPort, MobileParty.NavigationType.Default, out _);
+                            float factor = distance / TaleWorlds.CampaignSystem.Campaign.Current
+                                .GetAverageDistanceBetweenClosestTwoTownsWithNavigationType(MobileParty.NavigationType.Default);
                             return strength && factor <= 2f;
                         }
                         
@@ -200,7 +202,7 @@ namespace BannerKings.Behaviours.Diplomacy.Wars
                 (War war) =>
                 {
                     StanceLink attackerLink = war.Attacker.GetStanceWith(war.Defender);
-                    List<Settlement> attackerConquests = DiplomacyHelper.GetSuccessfullSiegesInWarForFaction(war.Attacker,
+                    List<Settlement> attackerConquests = Utils.Helpers.GetSuccessfullSiegesInWarForFaction(war.Attacker,
                        attackerLink, (Settlement x) => x.Town != null);
 
                     return attackerConquests.FindAll(x => x.Culture == war.Defender.Culture && x.MapFaction == war.Attacker).Count >= 1;
@@ -310,7 +312,7 @@ namespace BannerKings.Behaviours.Diplomacy.Wars
                 (War war) =>
                 {
                     StanceLink attackerLink = war.Attacker.GetStanceWith(war.Defender);
-                    List<Settlement> attackerConquests = DiplomacyHelper.GetSuccessfullSiegesInWarForFaction(war.Attacker,
+                    List<Settlement> attackerConquests = Utils.Helpers.GetSuccessfullSiegesInWarForFaction(war.Attacker,
                        attackerLink, (Settlement x) => x.Town != null);
 
                     return attackerConquests.FindAll(x => x.Culture == war.Defender.Culture && x.MapFaction == war.Attacker).Count >= 1;
@@ -348,7 +350,7 @@ namespace BannerKings.Behaviours.Diplomacy.Wars
                 (War war) =>
                 {
                     StanceLink attackerLink = war.Attacker.GetStanceWith(war.Defender);
-                    List<Settlement> attackerConquests = DiplomacyHelper.GetRaidsInWar(war.Attacker,
+                    List<Settlement> attackerConquests = Utils.Helpers.GetRaidsInWar(war.Attacker,
                        attackerLink, null);
 
                     return attackerConquests.FindAll(x => x.Culture == war.Defender.Culture).Count >= 8;
@@ -384,7 +386,7 @@ namespace BannerKings.Behaviours.Diplomacy.Wars
                 (War war) =>
                 {
                     StanceLink attackerLink = war.Attacker.GetStanceWith(war.Defender);
-                    List<Settlement> attackerConquests = DiplomacyHelper.GetSuccessfullSiegesInWarForFaction(war.Attacker,
+                    List<Settlement> attackerConquests = Utils.Helpers.GetSuccessfullSiegesInWarForFaction(war.Attacker,
                        attackerLink, (Settlement x) => x.Town != null);
 
                     return attackerConquests.FindAll(x => x.Culture == war.Defender.Culture && x.MapFaction == war.Attacker).Count >= 2;
@@ -454,7 +456,7 @@ namespace BannerKings.Behaviours.Diplomacy.Wars
                 (War war) =>
                 {
                     StanceLink attackerLink = war.Attacker.GetStanceWith(war.Defender);
-                    List<Settlement> attackerConquests = DiplomacyHelper.GetSuccessfullSiegesInWarForFaction(war.Attacker,
+                    List<Settlement> attackerConquests = Utils.Helpers.GetSuccessfullSiegesInWarForFaction(war.Attacker,
                        attackerLink, (Settlement x) => x.Town != null);
 
                     return attackerConquests.FindAll(x => x.Culture == war.Defender.Culture && x.MapFaction == war.Attacker).Count >= 1;

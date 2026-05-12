@@ -24,11 +24,48 @@ namespace BannerKings.Patches
 {
     internal class DiplomacyPatches
     {
+
+        private static readonly HashSet<(IFaction, IFaction)> _alliances = new HashSet<(IFaction, IFaction)>();
+
+        public static bool IsAllied(IFaction faction1, IFaction faction2)
+        {
+            return _alliances.Contains((faction1, faction2)) ||
+                   _alliances.Contains((faction2, faction1));
+        }
+
+        private static void UpdateVisuals(IFaction faction1, IFaction faction2)
+        {
+            if (CharacterObject.PlayerCharacter != null && Hero.MainHero != null &&
+                (faction1 == Hero.MainHero.MapFaction || faction2 == Hero.MainHero.MapFaction))
+            {
+                IFaction dirtySide = (faction1 == Hero.MainHero.MapFaction) ? faction2 : faction1;
+                foreach (Settlement settlement in Settlement.All.Where(p => p.IsVisible && p.MapFaction == dirtySide))
+                    settlement.Party.SetVisualAsDirty();
+                foreach (MobileParty mobileParty in MobileParty.All.Where(p => p.IsVisible && p.MapFaction == dirtySide))
+                    mobileParty.Party.SetVisualAsDirty();
+            }
+        }
+
+        [HarmonyPatch(typeof(AllianceCampaignBehavior))]
+        internal class AlliancePatches
+        {
+            [HarmonyPostfix]
+            [HarmonyPatch("StartAlliance")]
+            private static void StartAlliance(Kingdom proposerKingdom, Kingdom receiverKingdom)
+            {
+                if (proposerKingdom != receiverKingdom && !proposerKingdom.IsBanditFaction && !receiverKingdom.IsBanditFaction)
+                {
+                    _alliances.Add((proposerKingdom, receiverKingdom));
+                }
+                UpdateVisuals(proposerKingdom, receiverKingdom);
+            }
+        }
+
         //AI companion dialogue fixes
         [HarmonyPatch(typeof(FactionManager))]
         internal class LordDialoguePatches
         {
-            [HarmonyPostfix]
+            /*[HarmonyPostfix]
             [HarmonyPatch("DeclareAlliance")]
             private static void DeclareAlliance(IFaction faction1, IFaction faction2)
             {
@@ -43,10 +80,18 @@ namespace BannerKings.Patches
 
                 UpdateVisuals(faction1, faction2);
             }
+            private static void DeclareAlliance(IFaction faction1, IFaction faction2)
+            {
+                if (faction1 != faction2 && !faction1.IsBanditFaction && !faction2.IsBanditFaction)
+                {
+                    _alliances.Add((faction1, faction2));
+                }
+                UpdateVisuals(faction1, faction2);
+            }*/
 
             [HarmonyPostfix]
             [HarmonyPatch("SetNeutral")]
-            private static void SetNeutral(IFaction faction1, IFaction faction2)
+            /*private static void SetNeutral(IFaction faction1, IFaction faction2)
             {
                 if (faction1 != faction2 && !faction1.IsBanditFaction && !faction2.IsBanditFaction)
                 {
@@ -55,11 +100,20 @@ namespace BannerKings.Patches
                 }
 
                 UpdateVisuals(faction1, faction2);
+            }*/
+            private static void SetNeutral(IFaction faction1, IFaction faction2)
+            {
+                if (faction1 != faction2 && !faction1.IsBanditFaction && !faction2.IsBanditFaction)
+                {
+                    _alliances.Remove((faction1, faction2));
+                    _alliances.Remove((faction2, faction1));
+                }
+                UpdateVisuals(faction1, faction2);
             }
 
             [HarmonyPrefix]
             [HarmonyPatch("DeclareWar")]
-            private static bool DeclareWar(IFaction faction1, IFaction faction2)
+            /*private static bool DeclareWar(IFaction faction1, IFaction faction2)
             {
                 if (faction1 != faction2 && !faction1.IsBanditFaction && !faction2.IsBanditFaction)
                 {
@@ -68,9 +122,18 @@ namespace BannerKings.Patches
                 }
 
                 return true;
+            }*/
+            private static bool DeclareWar(IFaction faction1, IFaction faction2)
+            {
+                if (faction1 != faction2 && !faction1.IsBanditFaction && !faction2.IsBanditFaction)
+                {
+                    _alliances.Remove((faction1, faction2));
+                    _alliances.Remove((faction2, faction1));
+                }
+                return true;
             }
 
-            private static void UpdateVisuals(IFaction faction1, IFaction faction2)
+            /*private static void UpdateVisuals(IFaction faction1, IFaction faction2)
             {
                 if (CharacterObject.PlayerCharacter != null && Hero.MainHero != null && (faction1 == Hero.MainHero.MapFaction || faction2 == Hero.MainHero.MapFaction))
                 {
@@ -81,7 +144,7 @@ namespace BannerKings.Patches
                     foreach (MobileParty mobileParty in MobileParty.All.Where((MobileParty party) => party.IsVisible && party.MapFaction == dirtySide))
                         mobileParty.Party.SetVisualAsDirty();
                 }
-            }
+            }*/
         }
 
         /*[HarmonyPatch(typeof(Clan), "MapFaction", MethodType.Getter)]
@@ -153,7 +216,7 @@ namespace BannerKings.Patches
                 return false;
             }
 
-            [HarmonyPrefix]
+            /*[HarmonyPrefix]
             [HarmonyPatch("GetActionStatusForDiplomacyItemWithReason")]
             private static bool ButtonCLickable(KingdomDiplomacyVM __instance, KingdomDiplomacyItemVM item, bool isResolve,
                  out TextObject disabledReason, ref bool __result)
@@ -161,12 +224,12 @@ namespace BannerKings.Patches
                 KingdomTruceItemVM kingdomTruceItemVM;
                 if (__result == false && (kingdomTruceItemVM = (item as KingdomTruceItemVM)) != null)
                 {
-                    disabledReason = TextObject.Empty;
+                    disabledReason = new TextObject("");
                     __result = true;
                     return false;
                 }
 
-                disabledReason = TextObject.Empty;
+                disabledReason = new TextObject("");
                 return true;
             }
 
@@ -383,16 +446,24 @@ namespace BannerKings.Patches
                 Religion religion = BannerKingsConfig.Instance.ReligionsManager.GetHeroReligion(Hero.MainHero);
                 foreach (var casusBelli in diplomacy.GetAvailableCasusBelli(enemyKingdom))
                 {
-                    float support = new KingdomElection(new BKDeclareWarDecision(casusBelli,
+                    //float support = new KingdomElection(new BKDeclareWarDecision(casusBelli,
+                        //Clan.PlayerClan,
+                        //enemyKingdom)).GetLikelihoodForOutcome(0);
+                    var election = new KingdomElection(new BKDeclareWarDecision(casusBelli,
                         Clan.PlayerClan,
-                        enemyKingdom)).GetLikelihoodForOutcome(0);
+                        enemyKingdom));
+                    election.StartElectionWithoutPlayer();
+                    election.DetermineOfficialSupport();
+                    float support = election.PossibleOutcomes.Count > 0
+                        ? election.PossibleOutcomes[0].WinChance
+                        : 0f;
 
                     bool isReligious = religion != null && religion.Faith.WarDoctrine.AcceptsJustification(casusBelli);
                     TextObject piety = isReligious ? new TextObject("{=!}{PIETY}{PIETY_ICON}")
                         .SetTextVariable("PIETY", religion.Faith.WarDoctrine.GetPietyCost(casusBelli))
                         .SetTextVariable("PIETY_ICON", TextHelper.PIETY_ICON)
                         :
-                        TextObject.Empty;
+                        new TextObject("");
 
                     if (enabled && isReligious)
                         enabled = religion.Faith.WarDoctrine.HeroHasPiety(Hero.MainHero, casusBelli);
@@ -436,7 +507,7 @@ namespace BannerKings.Patches
                         __instance.RefreshValues();
                     },
                     null));
-            }
+            }*/
         }
     }
 }

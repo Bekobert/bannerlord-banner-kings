@@ -55,7 +55,7 @@ namespace BannerKings.Behaviours
             }
         }
 
-        private void OnGameLoaded(CampaignGameStarter starter)
+        /*private void OnGameLoaded(CampaignGameStarter starter)
         {
             Type heroType = null;
             FieldInfo attrs = null;
@@ -104,6 +104,30 @@ namespace BannerKings.Behaviours
 
                 if (!skillsDic.ContainsKey(BKSkills.Instance.Lordship))
                     skillsDic.Add(BKSkills.Instance.Lordship, 0);
+            }*/
+        private void OnGameLoaded(CampaignGameStarter starter)
+        {
+            foreach (var hero in Hero.AllAliveHeroes)
+            {
+                if (hero.GetAttributeValue(BKAttributes.Instance.Wisdom) == 0)
+                {
+                    hero.HeroDeveloper.AddAttribute(BKAttributes.Instance.Wisdom, 2, false);
+                }
+
+                if (hero.GetSkillValue(BKSkills.Instance.Scholarship) == 0)
+                {
+                    hero.HeroDeveloper.InitializeSkillXp(BKSkills.Instance.Scholarship);
+                }
+
+                if (hero.GetSkillValue(BKSkills.Instance.Theology) == 0)
+                {
+                    hero.HeroDeveloper.InitializeSkillXp(BKSkills.Instance.Theology);
+                }
+
+                if (hero.GetSkillValue(BKSkills.Instance.Lordship) == 0)
+                {
+                    hero.HeroDeveloper.InitializeSkillXp(BKSkills.Instance.Lordship);
+                }
             }
         }
     }

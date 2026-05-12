@@ -476,6 +476,7 @@ namespace BannerKings.Managers.Titles
                         .SetTextVariable("TITLE", FullName),
                         0,
                         null,
+                        null,
                         Utils.Helpers.GetKingdomDecisionSound());
                 }
             }

@@ -42,7 +42,7 @@ namespace BannerKings.Models.Vanilla
             }
         }
 
-        private ExplainedNumber GetVanillaWage(MobileParty mobileParty, bool includeDescriptions = false)
+        private ExplainedNumber GetVanillaWage(MobileParty mobileParty, TroopRoster troopRoster, bool includeDescriptions = false)
         {
             int num = 0;
             int num2 = 0;
@@ -58,9 +58,9 @@ namespace BannerKings.Models.Vanilla
             bool flag = !mobileParty.HasPerk(DefaultPerks.Steward.AidCorps, false);
             int num12 = 0;
             int num13 = 0;
-            for (int i = 0; i < mobileParty.MemberRoster.Count; i++)
+            for (int i = 0; i < troopRoster.Count; i++)
             {
-                TroopRosterElement elementCopyAtIndex = mobileParty.MemberRoster.GetElementCopyAtIndex(i);
+                TroopRosterElement elementCopyAtIndex = troopRoster.GetElementCopyAtIndex(i);
                 CharacterObject character = elementCopyAtIndex.Character;
                 int num14 = flag ? elementCopyAtIndex.Number : (elementCopyAtIndex.Number - elementCopyAtIndex.WoundedNumber);
                 int wage = (int)Math.Max(character.TroopWage * BaseWage, 1);
@@ -169,11 +169,11 @@ namespace BannerKings.Models.Vanilla
                         PerkHelper.AddPerkBonusForTown(DefaultPerks.OneHanded.MilitaryTradition, mobileParty.CurrentSettlement.Town, ref result);
                         PerkHelper.AddPerkBonusForTown(DefaultPerks.TwoHanded.Berserker, mobileParty.CurrentSettlement.Town, ref result);
                         PerkHelper.AddPerkBonusForTown(DefaultPerks.Bow.HunterClan, mobileParty.CurrentSettlement.Town, ref result);
-                        float troopRatio = (float)num4 / (float)mobileParty.MemberRoster.TotalRegulars;
+                        float troopRatio = (float)num4 / (float)troopRoster.TotalRegulars;
                         this.CalculatePartialGarrisonWageReduction(troopRatio, mobileParty, DefaultPerks.Polearm.StandardBearer, ref result, true);
-                        float troopRatio2 = (float)num5 / (float)mobileParty.MemberRoster.TotalRegulars;
+                        float troopRatio2 = (float)num5 / (float)troopRoster.TotalRegulars;
                         this.CalculatePartialGarrisonWageReduction(troopRatio2, mobileParty, DefaultPerks.Riding.CavalryTactics, ref result, true);
-                        float troopRatio3 = (float)num6 / (float)mobileParty.MemberRoster.TotalRegulars;
+                        float troopRatio3 = (float)num6 / (float)troopRoster.TotalRegulars;
                         this.CalculatePartialGarrisonWageReduction(troopRatio3, mobileParty, DefaultPerks.Crossbow.PeasantLeader, ref result, true);
                     }
                     else if (mobileParty.CurrentSettlement.IsCastle)
@@ -185,6 +185,7 @@ namespace BannerKings.Models.Vanilla
                     {
                         result.AddFactor(DefaultCulturalFeats.EmpireGarrisonWageFeat.EffectBonus, GameTexts.FindText("str_culture", null));
                     }
+                    /*
                     foreach (Building building in mobileParty.CurrentSettlement.Town.Buildings)
                     {
                         float buildingEffectAmount = building.GetBuildingEffectAmount(BuildingEffectEnum.GarrisonWageReduce);
@@ -193,6 +194,10 @@ namespace BannerKings.Models.Vanilla
                             explainedNumber2.AddFactor(-(buildingEffectAmount / 100f), building.Name);
                         }
                     }
+                    */
+                    ExplainedNumber buildingEffect = new ExplainedNumber(1f);
+                    mobileParty.CurrentSettlement.Town.AddEffectOfBuildings(BuildingEffectEnum.GarrisonWageReduction, ref buildingEffect);
+                    explainedNumber2.AddFactor(buildingEffect.ResultNumber - 1f, null);
                 }
             }
             result.Add(explainedNumber.ResultNumber, null, null);
@@ -201,7 +206,7 @@ namespace BannerKings.Models.Vanilla
                 mobileParty.LeaderHero.Clan.Kingdom.ActivePolicies.Contains(DefaultPolicies.MilitaryCoronae)) ? 0.1f : 0f;
             if (mobileParty.HasPerk(DefaultPerks.Trade.SwordForBarter, true))
             {
-                float num18 = (float)num12 / (float)mobileParty.MemberRoster.TotalRegulars;
+                float num18 = (float)num12 / (float)troopRoster.TotalRegulars;
                 if (num18 > 0f)
                 {
                     float value2 = DefaultPerks.Trade.SwordForBarter.SecondaryBonus * num18;
@@ -210,7 +215,7 @@ namespace BannerKings.Models.Vanilla
             }
             if (mobileParty.HasPerk(DefaultPerks.Steward.Contractors, false))
             {
-                float num19 = (float)num13 / (float)mobileParty.MemberRoster.TotalRegulars;
+                float num19 = (float)num13 / (float)troopRoster.TotalRegulars;
                 if (num19 > 0f)
                 {
                     float value3 = DefaultPerks.Steward.Contractors.PrimaryBonus * num19;
@@ -219,7 +224,7 @@ namespace BannerKings.Models.Vanilla
             }
             if (mobileParty.HasPerk(DefaultPerks.Trade.MercenaryConnections, true))
             {
-                float num20 = (float)num13 / (float)mobileParty.MemberRoster.TotalRegulars;
+                float num20 = (float)num13 / (float)troopRoster.TotalRegulars;
                 if (num20 > 0f)
                 {
                     float value4 = DefaultPerks.Trade.MercenaryConnections.SecondaryBonus * num20;
@@ -255,9 +260,9 @@ namespace BannerKings.Models.Vanilla
             return result;
         }
 
-        public override ExplainedNumber GetTotalWage(MobileParty mobileParty, bool includeDescriptions = false)
+        public override ExplainedNumber GetTotalWage(MobileParty mobileParty, TroopRoster troopRoster, bool includeDescriptions = false)
         {
-            ExplainedNumber result = GetVanillaWage(mobileParty, includeDescriptions);
+            ExplainedNumber result = GetVanillaWage(mobileParty, troopRoster, includeDescriptions);
 
             if (mobileParty.IsLordParty && mobileParty.ActualClan.IsClanTypeMercenary)
             {
@@ -350,9 +355,9 @@ namespace BannerKings.Models.Vanilla
             return result;
         }
 
-        public override int GetTroopRecruitmentCost(CharacterObject troop, Hero buyerHero, bool withoutItemCost = false)
+        public override ExplainedNumber GetTroopRecruitmentCost(CharacterObject troop, Hero buyerHero, bool withoutItemCost = false)
         {
-            var result = new ExplainedNumber(base.GetTroopRecruitmentCost(troop, buyerHero, withoutItemCost));
+            var result = new ExplainedNumber(base.GetTroopRecruitmentCost(troop, buyerHero, withoutItemCost).ResultNumber);
             result.LimitMin(GetCharacterWage(troop) * 10f);
 
             ExceptionUtils.TryCatch(() =>
@@ -425,7 +430,7 @@ namespace BannerKings.Models.Vanilla
             GetType().Name,
             false);
             
-            return (int) result.ResultNumber;
+            return result;
         }
     }
 }

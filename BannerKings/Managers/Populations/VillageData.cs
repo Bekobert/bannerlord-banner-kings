@@ -87,7 +87,7 @@ namespace BannerKings.Managers.Populations
             if (inProgress.IsEmpty())
             {
                 inProgress.Enqueue(buildings.GetRandomElementWithPredicate(x =>
-                    x.BuildingType.BuildingLocation != BuildingLocation.Daily));
+                    !x.BuildingType.IsDailyProject));
             }
         }
 
@@ -97,7 +97,7 @@ namespace BannerKings.Managers.Populations
             {
                 int buildingsToGive = (int)(Village.Hearth / 200f);
                 for (int i = 0; i < buildingsToGive; i++)
-                    buildings.GetRandomElementWithPredicate(x => x.BuildingType.BuildingLocation != BuildingLocation.Daily)
+                    buildings.GetRandomElementWithPredicate(x => !x.BuildingType.IsDailyProject)
                         .LevelUp();           
 
                 BuildingsSet = true;
@@ -127,7 +127,7 @@ namespace BannerKings.Managers.Populations
         {
             if (buildings == null) buildings = new List<Building>(10);
 
-            foreach (var building in buildings)
+            /*foreach (var building in buildings)
             {
                 var type = DefaultVillageBuildings.Instance.GetById(building.BuildingType);
                 building.BuildingType.Initialize(type.Name,
@@ -140,6 +140,22 @@ namespace BannerKings.Managers.Populations
                     },
                     type.BuildingLocation,
                     new System.Tuple<BuildingEffectEnum, float, float, float>[] {});
+            }*/
+            foreach (var building in buildings)
+            {
+                var type = DefaultVillageBuildings.Instance.GetById(building.BuildingType);
+                building.BuildingType.Initialize(
+                    type.Name,
+                    type.Explanation,
+                    new int[3]
+                    {
+                        type.GetProductionCost(0),
+                        type.GetProductionCost(1),
+                        type.GetProductionCost(2)
+                    },
+                    new System.Tuple<BuildingEffectEnum, BuildingEffectIncrementType, float, float, float>[] { },
+                    type.IsMilitaryProject,  // BuildingLocation yerine
+                    type.VarianceChance);
             }
 
             if (village.Owner != null)

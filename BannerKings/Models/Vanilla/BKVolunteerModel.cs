@@ -22,6 +22,7 @@ using BannerKings.Managers.Recruits;
 using BannerKings.Managers.Titles.Governments;
 using BannerKings.Managers.Titles;
 using BannerKings.Models.Vanilla.Abstract;
+using Helpers;
 
 namespace BannerKings.Models.Vanilla
 {
@@ -132,7 +133,7 @@ namespace BannerKings.Models.Vanilla
                     factor = 0.4f;
                 }
 
-                if (buyerHero.MapFaction.IsKingdomFaction && FactionManager.GetEnemyKingdoms(buyerHero.MapFaction as Kingdom).Count() > 0)
+                if (buyerHero.MapFaction.IsKingdomFaction && FactionHelper.GetEnemyKingdoms(buyerHero.MapFaction as Kingdom).Count() > 0)
                 {
                     factor += 0.15f;
                 }

@@ -7,6 +7,7 @@ using Bannerlord.UIExtenderEx.Attributes;
 using Bannerlord.UIExtenderEx.ViewModels;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement;
+using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -241,13 +242,18 @@ namespace BannerKings.UI.Extensions
                         policy.DoneHint.HintText = text;
                         policy.CanProposeOrDisavowPolicy = false;
                     }
-                   
-                    if (diplomacy.IsActionEnabled)
+
+                    /*if (diplomacy.IsActionEnabled)
                     {
                         diplomacy.ActionHint.HintText = text;
                         diplomacy.IsActionEnabled = false;
+                    }*/
+                    foreach (var action in diplomacy.Actions)
+                    {
+                        action.IsEnabled = false;
+                        action.Hint = new HintViewModel(text);
                     }
-                    
+
                     if (clans.CanExpelCurrentClan)
                     {
                         clans.ExpelHint.HintText = text;
